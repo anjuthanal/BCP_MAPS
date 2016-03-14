@@ -54,7 +54,7 @@ public class MyLocationService extends Service {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                delay = mSharedPreferences.getLong("CONFIG TIME", 20000);
+                delay = mSharedPreferences.getLong("CONFIG TIME", 60000);
                 handler.postDelayed(this, delay);
                 gpsTracker();
                 Log.e("MyService", "delay = " + delay);

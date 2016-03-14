@@ -109,7 +109,7 @@ public class Credentials {
         initializeGoogleCredential();
         String tableId;
         try {
-            tableId = "1I7ERgHRoyUFNECNY7Wk1C_ZsAORtUtcvdwH6AoiE";
+            tableId = "1SV54DdexECCFTLjLASMnidusNEgG19u34nAAm2iU";
             mDrive.permissions().create(tableId, getPermission()).execute();
 
             mFusionTable.table().importRows(tableId,
@@ -122,7 +122,7 @@ public class Credentials {
     public long getTimeFromConfigTable() {
         initializeGoogleCredential();
         try {
-            String tableId = "1oOn_1WFdAtkp1bSbtCc6jFbx8i7OGpXmUlj9lqkF";
+            String tableId = "1HFBubOUXudNpnGpOqSsUuxcBT-Bk6TbpY-ILvNG9";
             mDrive.permissions().create(tableId, getPermission()).execute();
             Sqlresponse sqlresponse = mFusionTable.query().sql("SELECT * FROM " + tableId).execute();
             Log.i("Time Duration" , " in Milliseconds " + sqlresponse.getRows().get(0).get(0));
@@ -130,7 +130,7 @@ public class Credentials {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return 10000;
+        return 60000;
     }
 
     private Permission getPermission() {
@@ -138,7 +138,7 @@ public class Credentials {
          * 'reader', 'commenter', 'writer', and 'owner'
          */
         Permission permission = new Permission();
-        permission.setEmailAddress("anju.thanal@gmail.com");
+        permission.setEmailAddress("testbcpmaps@gmail.com");
         permission.setType("user");
         permission.setRole("reader");
         permission.setRole("writer");
@@ -153,7 +153,7 @@ public class Credentials {
             ClassLoader classLoader = MainActivity.class.getClassLoader();
 
             KeyStore keystore = KeyStore.getInstance("PKCS12");
-            InputStream keyFileStream = classLoader.getResourceAsStream("BCP PROJECT-64c714454406.p12");
+            InputStream keyFileStream = classLoader.getResourceAsStream("BCP MAPS-bfa88b278834.p12");
 
             if (keyFileStream == null){
                 throw new Exception("Key File Not Found.");
@@ -165,7 +165,7 @@ public class Credentials {
             return new GoogleCredential.Builder()
                     .setTransport(sHttpTransport)
                     .setJsonFactory(JSON_FACTORY)
-                    .setServiceAccountId("bcp-project-1239@appspot.gserviceaccount.com")
+                    .setServiceAccountId("bcp-maps@appspot.gserviceaccount.com")
                     .setServiceAccountPrivateKey(key)
                     .setServiceAccountScopes(Arrays.asList(FusiontablesScopes.FUSIONTABLES, DriveScopes.DRIVE))
                     .build();
