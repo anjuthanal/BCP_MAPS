@@ -36,6 +36,7 @@ public class MyLocationService extends Service {
     private GPSTracker gps;
     private double latitude = 0, longitude = 0;
     private Credentials credentials;
+    private Runnable runnable;
 
     @Override
     public void onCreate() {
@@ -51,7 +52,7 @@ public class MyLocationService extends Service {
         credentials = new Credentials();
         final SharedPreferences mSharedPreferences = getApplicationContext().getSharedPreferences("Shared", Context.MODE_PRIVATE);
 
-        handler.post(new Runnable() {
+        runnable = new Runnable() {
             @Override
             public void run() {
                 delay = mSharedPreferences.getLong("CONFIG TIME", 60000);
@@ -59,7 +60,9 @@ public class MyLocationService extends Service {
                 gpsTracker();
                 Log.e("MyService", "delay = " + delay);
             }
-        });
+        };
+
+        handler.post(runnable);
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -75,8 +78,6 @@ public class MyLocationService extends Service {
 
             Log.e("latitude", "" + latitude);
             Log.e("longitude", "" + longitude);
-
-//            Toast.makeText(getApplicationContext(), "Location Update \nLat: " + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
             File file = credentials.saveFile(latitude, longitude,getApplicationContext());
             new UploadToFTAsync(UploadToFTAsync.uploadFile, file, null).execute();
         }
@@ -91,11 +92,11 @@ public class MyLocationService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Toast.makeText(getApplicationContext(), "Service stopped", Toast.LENGTH_LONG).show();
+        Log.e("Service stopped", "Service stopped");
         try {
-            handler.removeCallbacks(null);
+            handler.removeCallbacks(runnable);
         } catch (Exception e) {
-
+            e.printStackTrace();
         };
     }
 }

@@ -1,7 +1,9 @@
 package com.bcp.bcp;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
@@ -56,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     GPSTracker gps;
     Credentials credentials;
+    private SharedPreferences.Editor mEditor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +67,8 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         switchCompat = (SwitchCompat) findViewById(R.id.Switch);
 
         gps = new GPSTracker(MainActivity.this);
+        SharedPreferences mSharedPreferences = getSharedPreferences("Shared", Context.MODE_PRIVATE);
+        mEditor = mSharedPreferences.edit();
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -75,6 +80,8 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
+
+        switchCompat.setChecked(mSharedPreferences.getBoolean("SWITCH", false));
 
         credentials = new Credentials();
 
@@ -91,8 +98,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         mapFragment.getMapAsync(this);
 
         switchCompat.setOnCheckedChangeListener(this);
-        switchCompat.setChecked(false);
-
     }
 
     @Override
@@ -101,6 +106,8 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             case R.id.Switch:
                 if (isChecked) {
                     new UploadToFTAsync(UploadToFTAsync.getConfigTime, null, this).execute();
+                    mEditor.putBoolean("SWITCH", true);
+                    mEditor.commit();
                 } else {
                     try {
                         Intent intent = new Intent(this, MyLocationService.class);
@@ -109,14 +116,11 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                         e.printStackTrace();
                     }
                     Toast.makeText(getApplicationContext(), "Your Location is default", Toast.LENGTH_LONG).show();
+                    mEditor.putBoolean("SWITCH", false);
+                    mEditor.commit();
                 }
-
                 break;
-
         }
-
-
-
     }
 
     @Override

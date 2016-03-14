@@ -109,7 +109,7 @@ public class Credentials {
         initializeGoogleCredential();
         String tableId;
         try {
-            tableId = "1SV54DdexECCFTLjLASMnidusNEgG19u34nAAm2iU";
+            tableId = "1KxlgrCVI9IOpBxGYJLH7p4aOzIPrpk42pQTCXb5I";
             mDrive.permissions().create(tableId, getPermission()).execute();
 
             mFusionTable.table().importRows(tableId,
@@ -122,7 +122,7 @@ public class Credentials {
     public long getTimeFromConfigTable() {
         initializeGoogleCredential();
         try {
-            String tableId = "1HFBubOUXudNpnGpOqSsUuxcBT-Bk6TbpY-ILvNG9";
+            String tableId = "19yu7FZCAJDJWn7jzgtzLnwOL5VQFh_ZlauJ3lTvT";
             mDrive.permissions().create(tableId, getPermission()).execute();
             Sqlresponse sqlresponse = mFusionTable.query().sql("SELECT * FROM " + tableId).execute();
             Log.i("Time Duration" , " in Milliseconds " + sqlresponse.getRows().get(0).get(0));
@@ -153,7 +153,7 @@ public class Credentials {
             ClassLoader classLoader = MainActivity.class.getClassLoader();
 
             KeyStore keystore = KeyStore.getInstance("PKCS12");
-            InputStream keyFileStream = classLoader.getResourceAsStream("BCP MAPS-bfa88b278834.p12");
+            InputStream keyFileStream = classLoader.getResourceAsStream("BCP TEST-b94b4f599464.p12");
 
             if (keyFileStream == null){
                 throw new Exception("Key File Not Found.");
@@ -165,7 +165,7 @@ public class Credentials {
             return new GoogleCredential.Builder()
                     .setTransport(sHttpTransport)
                     .setJsonFactory(JSON_FACTORY)
-                    .setServiceAccountId("bcp-maps@appspot.gserviceaccount.com")
+                    .setServiceAccountId("bcp-test-1250@appspot.gserviceaccount.com")
                     .setServiceAccountPrivateKey(key)
                     .setServiceAccountScopes(Arrays.asList(FusiontablesScopes.FUSIONTABLES, DriveScopes.DRIVE))
                     .build();
