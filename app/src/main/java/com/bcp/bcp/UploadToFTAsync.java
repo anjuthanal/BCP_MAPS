@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.widget.Toast;
 
 import java.io.File;
 
@@ -71,6 +72,8 @@ public class UploadToFTAsync extends AsyncTask<Void,Void,Void> {
         if (todo == getConfigTime) {
             Intent intent = new Intent(mContext, MyLocationService.class);
             mContext.startService(intent);
+        }else{
+            Toast.makeText(mContext, "Uploaded to Fusion Table", Toast.LENGTH_LONG).show();
         }
     }
 
