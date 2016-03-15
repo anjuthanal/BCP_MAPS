@@ -56,7 +56,7 @@ public class UploadToFTAsync extends AsyncTask<Void,Void,Void> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        if (mContext != null) {
+        if (mContext != null && todo == getConfigTime) {
             progressDialog = new ProgressDialog(mContext);
             progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             progressDialog.show();
@@ -73,7 +73,10 @@ public class UploadToFTAsync extends AsyncTask<Void,Void,Void> {
             Intent intent = new Intent(mContext, MyLocationService.class);
             mContext.startService(intent);
         }else{
-            Toast.makeText(mContext, "Uploaded to Fusion Table", Toast.LENGTH_LONG).show();
+            if(mContext!=null){
+                Toast.makeText(mContext, "Location updated to fution table ", Toast.LENGTH_LONG).show();
+            }
+
         }
     }
 
