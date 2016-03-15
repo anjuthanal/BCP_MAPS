@@ -78,8 +78,11 @@ public class MyLocationService extends Service {
 
             Log.e("latitude", "" + latitude);
             Log.e("longitude", "" + longitude);
-            File file = credentials.saveFile(latitude, longitude,getApplicationContext());
-            new UploadToFTAsync(UploadToFTAsync.uploadFile, file, getApplicationContext()).execute();
+            if(latitude != 0 && longitude != 0){
+                File file = credentials.saveFile(latitude, longitude,getApplicationContext());
+                new UploadToFTAsync(UploadToFTAsync.uploadFile, file, getApplicationContext()).execute();
+            }
+
         }
     }
 
