@@ -109,7 +109,7 @@ public class Credentials {
         initializeGoogleCredential();
         String tableId;
         try {
-            tableId = "1KxlgrCVI9IOpBxGYJLH7p4aOzIPrpk42pQTCXb5I";
+            tableId = "1GF89Dxwq5m19T8Scx-zRFpaEtVubUfN2cRUZO5cJ";
             mDrive.permissions().create(tableId, getPermission()).execute();
 
             mFusionTable.table().importRows(tableId,
@@ -122,7 +122,7 @@ public class Credentials {
     public long getTimeFromConfigTable() {
         initializeGoogleCredential();
         try {
-            String tableId = "19yu7FZCAJDJWn7jzgtzLnwOL5VQFh_ZlauJ3lTvT";
+            String tableId = "1GF89Dxwq5m19T8Scx-zRFpaEtVubUfN2cRUZO5cJ";
             mDrive.permissions().create(tableId, getPermission()).execute();
             Sqlresponse sqlresponse = mFusionTable.query().sql("SELECT * FROM " + tableId).execute();
             Log.i("Time Duration" , " in Milliseconds " + sqlresponse.getRows().get(0).get(0));
@@ -138,7 +138,7 @@ public class Credentials {
          * 'reader', 'commenter', 'writer', and 'owner'
          */
         Permission permission = new Permission();
-        permission.setEmailAddress("testbcpmaps@gmail.com");
+        permission.setEmailAddress("anju.thanal@gmail.com");
         permission.setType("user");
         permission.setRole("reader");
         permission.setRole("writer");
@@ -153,7 +153,7 @@ public class Credentials {
             ClassLoader classLoader = MainActivity.class.getClassLoader();
 
             KeyStore keystore = KeyStore.getInstance("PKCS12");
-            InputStream keyFileStream = classLoader.getResourceAsStream("BCP TEST-b94b4f599464.p12");
+            InputStream keyFileStream = classLoader.getResourceAsStream("BCP PROJECT-64c714454406.p12");
 
             if (keyFileStream == null){
                 throw new Exception("Key File Not Found.");
@@ -165,7 +165,7 @@ public class Credentials {
             return new GoogleCredential.Builder()
                     .setTransport(sHttpTransport)
                     .setJsonFactory(JSON_FACTORY)
-                    .setServiceAccountId("bcp-test-1250@appspot.gserviceaccount.com")
+                    .setServiceAccountId("bcp-project-1239@appspot.gserviceaccount.com")
                     .setServiceAccountPrivateKey(key)
                     .setServiceAccountScopes(Arrays.asList(FusiontablesScopes.FUSIONTABLES, DriveScopes.DRIVE))
                     .build();
