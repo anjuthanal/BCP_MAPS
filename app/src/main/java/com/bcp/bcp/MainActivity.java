@@ -18,11 +18,15 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
+import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bcp.bcp.database.DatabaseHandler;
+import com.bcp.bcp.database.GeoFence;
 import com.bcp.bcp.gcm.QuickstartPreferences;
 import com.bcp.bcp.gcm.RegistrationIntentService;
 import com.google.android.gms.common.ConnectionResult;
@@ -54,6 +58,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, OnMapReadyCallback, LocationListener {
     private SwitchCompat switchCompat;
@@ -65,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     Location location;
     double latitude;
     double longitude;
+    boolean isInserted;
 
     GPSTracker gps;
     Credentials credentials;
@@ -78,6 +84,9 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     private ProgressBar mRegistrationProgressBar;
     private TextView mInformationTextView;
     private boolean isReceiverRegistered;
+    private ImageButton imageButton;
+    DatabaseHandler databaseHandler;
+    List<GeoFence> fenceList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,12 +122,10 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             longitude = location.getLongitude();
         }
 
-        MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+       /* MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);*/
 
         switchCompat.setOnCheckedChangeListener(this);
-
-
 
         mRegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);
         mRegistrationBroadcastReceiver = new BroadcastReceiver() {
@@ -146,6 +153,29 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             Intent intent = new Intent(this, RegistrationIntentService.class);
             startService(intent);
         }
+
+
+        imageButton = (ImageButton)findViewById(R.id.imageButton);
+        databaseHandler = new DatabaseHandler(this);
+        imageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                isInserted = databaseHandler.addFence(new GeoFence("178.123", "78.123", "2", "DLF"));
+                databaseHandler.addFence(new GeoFence("111.123", "18.123", "3", "CHN"));
+                databaseHandler.addFence(new GeoFence("146.123","98.123","2","KOC"));
+                if (isInserted) {
+                    Log.d("Insert: ", "Inserted ..");
+                    Toast.makeText(getApplicationContext(),"Fences Added",Toast.LENGTH_LONG).show();
+                    fenceList = databaseHandler.getAllGeoFence();
+                    for(GeoFence geoFence : fenceList){
+                        String log = "Id: "+geoFence.getId()+" ,Lattitude: " + geoFence.getLat() + " ,Longittude: " +geoFence.getLng() + "  ,Radius: " +geoFence.getRadius() +" ,FenceName: " +
+                                geoFence.getFenceName();
+                        // Writing Contacts to log
+                        Log.d("Fences: ", log);
+                    }
+                }
+            }
+        });
     }
 
 
