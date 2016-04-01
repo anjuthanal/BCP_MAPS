@@ -16,12 +16,19 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "geofenceManager";
+
     private static final String TABLE_GEOFENCE = "geofence";
     private static final String KEY_ID = "id";
     private static final String KEY_LAT = "lat";
     private static final String KEY_LNG = "lng";
     private static final String KEY_RADIUS = "radius";
     private static final String KEY_FENCE_NAME = "fencename";
+
+    private static final String TABLE_FENCETIMING = "fencetiming";
+    private static final String KEY_TIMINGID = "id";
+    private static final String KEY_FENCEADDRESS = "fenceAddress";
+    private static final String KEY_STATUS = "status";
+    private static final String KEY_DATETIME = "Datetime";
 
 
     public DatabaseHandler(Context context) {
@@ -31,9 +38,14 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+
         String CREATE_GEOFENCE_TABLE = "CREATE TABLE " + TABLE_GEOFENCE + "("
                 + KEY_ID + " INTEGER PRIMARY KEY, " + KEY_LAT + " TEXT, " + KEY_LNG + " TEXT,"+ KEY_RADIUS + " TEXT," + KEY_FENCE_NAME + " TEXT" + ")";
         db.execSQL(CREATE_GEOFENCE_TABLE);
+
+        String CREATE_FENCETIMING_TABLE = "CREATE TABLE " + TABLE_FENCETIMING + "("
+                + KEY_TIMINGID + " INTEGER PRIMARY KEY, " + KEY_FENCEADDRESS + " TEXT, " +KEY_DATETIME + " TEXT" + ")";
+        db.execSQL(CREATE_FENCETIMING_TABLE);
 
     }
 
@@ -41,11 +53,17 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Drop older table if existed
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_GEOFENCE);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_FENCETIMING);
         // Create tables again
         onCreate(db);
 
     }
 
+    public boolean addFEnceTiming(FenceTiming fenceTiming){
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        boolean isInserted = false;
+        return isInserted;
+    }
     public boolean addFence(GeoFence geoFence){
 
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();

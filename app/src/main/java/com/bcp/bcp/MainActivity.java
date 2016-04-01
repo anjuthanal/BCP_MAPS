@@ -29,35 +29,15 @@ import com.bcp.bcp.database.DatabaseHandler;
 import com.bcp.bcp.database.GeoFence;
 import com.bcp.bcp.gcm.QuickstartPreferences;
 import com.bcp.bcp.gcm.RegistrationIntentService;
+import com.bcp.bcp.recyclerview.FenceTimingActivity;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.DriveScopes;
-import com.google.api.services.fusiontables.Fusiontables;
-import com.google.api.services.fusiontables.FusiontablesScopes;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.PrivateKey;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, OnMapReadyCallback, LocationListener {
@@ -160,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                isInserted = databaseHandler.addFence(new GeoFence("178.123", "78.123", "2", "DLF"));
+                /*isInserted = databaseHandler.addFence(new GeoFence("178.123", "78.123", "2", "DLF"));
                 databaseHandler.addFence(new GeoFence("111.123", "18.123", "3", "CHN"));
                 databaseHandler.addFence(new GeoFence("146.123","98.123","2","KOC"));
                 if (isInserted) {
@@ -173,7 +153,10 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                         // Writing Contacts to log
                         Log.d("Fences: ", log);
                     }
-                }
+                }*/
+
+                Intent intent = new Intent(MainActivity.this, FenceTimingActivity.class);
+                startActivity(intent);
             }
         });
     }
