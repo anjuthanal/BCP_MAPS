@@ -29,13 +29,15 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     /*  compile 'com.google.api-client:google-api-client:1.19.1'
-                                        compile 'com.google.apis:google-api-services-fusiontables:v2-rev7-1.21.0'
-                                        compile 'com.google.api-client:google-api-client-android:1.19.0' exclude module: 'httpclient'
-                                        compile 'com.google.http-client:google-http-client-gson:1.19.0' exclude module: 'httpclient'
-                                        compile 'com.google.android.gms:play-services-identity:7.3.0'*/
+                                            compile 'com.google.apis:google-api-services-fusiontables:v2-rev7-1.21.0'
+                                            compile 'com.google.api-client:google-api-client-android:1.19.0' exclude module: 'httpclient'
+                                            compile 'com.google.http-client:google-http-client-gson:1.19.0' exclude module: 'httpclient'
+                                            compile 'com.google.android.gms:play-services-identity:7.3.0'*/
     compile 'com.android.support:appcompat-v7:23.2.0'
     compile 'com.android.support:cardview-v7:23.2.0'
-    compile 'com.google.android.gms:play-services:8.4.0'
+    compile 'com.google.android.gms:play-services-gcm:8.4.0'
+    compile 'com.google.android.gms:play-services-maps:8.4.0'
+    compile 'com.google.android.gms:play-services-location:8.4.0'
     compile 'com.squareup.okhttp3:okhttp:3.1.2'
     compile 'com.android.support:design:23.2.0'
     compile files('/usr/local/google/home/anjup/AndroidStudioProjects/BCP_MAPS/libs/google-api-client-1.21.0.jar')

@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bcp.bcp.R;
+import com.bcp.bcp.database.FenceTiming;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
  */
 public class FenceAdapter extends RecyclerView.Adapter<FenceAdapter.MyViewHolder>  {
 
-    private List<FenceDetailsOBject> fenceDetailsOBjectList;
+    private List<FenceTiming> fenceDetailsOBjectList;
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView address, status, time;
@@ -27,7 +28,7 @@ public class FenceAdapter extends RecyclerView.Adapter<FenceAdapter.MyViewHolder
             time = (TextView) view.findViewById(R.id.dtime);
         }
     }
-    public FenceAdapter(List<FenceDetailsOBject> fenceDetailsOBjectList) {
+    public FenceAdapter(List<FenceTiming> fenceDetailsOBjectList) {
         this.fenceDetailsOBjectList = fenceDetailsOBjectList;
     }
 
@@ -41,10 +42,10 @@ public class FenceAdapter extends RecyclerView.Adapter<FenceAdapter.MyViewHolder
 
     @Override
     public void onBindViewHolder(FenceAdapter.MyViewHolder holder, int position) {
-        FenceDetailsOBject fenceDetailsOBject = fenceDetailsOBjectList.get(position);
-        holder.address.setText(fenceDetailsOBject.getfAddress());
-        holder.status.setText(fenceDetailsOBject.getfStatus());
-        holder.time.setText(fenceDetailsOBject.getfTime());
+        FenceTiming fenceDetailsOBject = fenceDetailsOBjectList.get(position);
+        holder.address.setText(fenceDetailsOBject.getFenceAddress());
+        holder.status.setText(fenceDetailsOBject.getStatus());
+        holder.time.setText(fenceDetailsOBject.getDatetime());
 
     }
 

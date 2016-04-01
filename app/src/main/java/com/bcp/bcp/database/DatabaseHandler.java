@@ -44,7 +44,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.execSQL(CREATE_GEOFENCE_TABLE);
 
         String CREATE_FENCETIMING_TABLE = "CREATE TABLE " + TABLE_FENCETIMING + "("
-                + KEY_TIMINGID + " INTEGER PRIMARY KEY, " + KEY_FENCEADDRESS + " TEXT, " +KEY_DATETIME + " TEXT" + ")";
+                + KEY_TIMINGID + " INTEGER PRIMARY KEY, " + KEY_FENCEADDRESS + " TEXT,"+ KEY_STATUS + " TEXT," +KEY_DATETIME + " TEXT" + ")";
         db.execSQL(CREATE_FENCETIMING_TABLE);
 
     }
@@ -62,8 +62,50 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public boolean addFEnceTiming(FenceTiming fenceTiming){
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
         boolean isInserted = false;
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_FENCEADDRESS, fenceTiming.getFenceAddress());
+        values.put(KEY_STATUS, fenceTiming.getStatus());
+        values.put(KEY_DATETIME, fenceTiming.getDatetime());
+
+        if(values!=null) {
+            // Inserting Row
+            sqLiteDatabase.insert(TABLE_FENCETIMING, null, values);
+            isInserted = true;
+        }
+        //2nd argument is String containing nullColumnHack
+        sqLiteDatabase.close(); // Closing database connection
+
         return isInserted;
     }
+
+    public List<FenceTiming> getAllFenceTiming() {
+        List<FenceTiming> fenceTimingList = new ArrayList<FenceTiming>();
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_FENCETIMING;
+
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                FenceTiming fenceTiming = new FenceTiming();
+                fenceTiming.setId(Integer.parseInt(cursor.getString(0)));
+                fenceTiming.setFenceAddress(cursor.getString(1));
+                fenceTiming.setStatus(cursor.getString(2));
+                fenceTiming.setDatetime(cursor.getString(3));
+
+                // Adding contact to list
+                fenceTimingList.add(fenceTiming);
+            } while (cursor.moveToNext());
+        }
+
+        // return contact list
+        return fenceTimingList;
+    }
+
+
     public boolean addFence(GeoFence geoFence){
 
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
