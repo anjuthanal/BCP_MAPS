@@ -269,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         switch (buttonView.getId()) {
             case R.id.Switch:
                 if (isChecked) {
-                    new UploadToFTAsync(UploadToFTAsync.getConfigTime, null, this).execute();
+                    //new UploadToFTAsync(UploadToFTAsync.getConfigTime, null, this).execute();
                     mEditor.putBoolean("SWITCH", true);
                     mEditor.commit();
                 } else {

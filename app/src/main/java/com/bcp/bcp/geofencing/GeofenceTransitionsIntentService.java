@@ -21,6 +21,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.support.v4.app.NotificationCompat;
@@ -30,6 +31,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.bcp.bcp.MainActivity;
+import com.bcp.bcp.MyLocationService;
 import com.bcp.bcp.R;
 import com.bcp.bcp.database.DatabaseHandler;
 import com.bcp.bcp.database.FenceTiming;
@@ -140,6 +142,30 @@ public class GeofenceTransitionsIntentService extends IntentService {
         if(isInserted)
         {
            Log.e("GeofenceonsIS : ","inserted to db");
+        }
+
+        //insert into new frence breach fution table for each entry exit //no conditions
+
+        //When switch is ON  and we are breaching a fence (entering) we will write that data to FT When switch is ON and we are breaching fence(exiting) we will write that data to FT as well.
+
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("Shared", MODE_PRIVATE);
+        SharedPreferences.Editor mEditor = pref.edit();
+        if(geofenceTransitionString.equalsIgnoreCase(getString(R.string.geofence_transition_exited))) {
+            if (pref.getBoolean("SWITCH", false)) {
+                //if switch is ON
+                String timeValue = pref.getString("Time_Interval", "10000");
+                long configurableTime = Long.parseLong(timeValue);
+                mEditor.putLong("CONFIG TIME", configurableTime);
+                mEditor.commit();
+                Intent intent = new Intent(this, MyLocationService.class);
+                startService(intent);
+
+            } else {
+                //if switch is OFF
+
+            }
+            //INSERT into fution table lat/long
+            //time interval from shared pref, which is stored from push notification
         }
         return geofenceTransitionString + ": " + triggeringGeofencesIdsString;
     }

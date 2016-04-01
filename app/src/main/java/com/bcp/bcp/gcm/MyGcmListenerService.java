@@ -20,6 +20,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -55,6 +56,14 @@ public class MyGcmListenerService extends GcmListenerService {
         }
         //instead of sending notification here save the message value to Shared preference
         sendNotification(message);
+
+        // save the message to shared prefferences
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("Shared", MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putString("Time_Interval", "10000");
+       // editor.putString("Time_Interval", message);
+        editor.commit();
+
         // [END_EXCLUDE]
     }
     // [END receive_message]
