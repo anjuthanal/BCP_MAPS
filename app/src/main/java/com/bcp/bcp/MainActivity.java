@@ -159,20 +159,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*isInserted = databaseHandler.addFence(new GeoFence("178.123", "78.123", "2", "DLF"));
-                databaseHandler.addFence(new GeoFence("111.123", "18.123", "3", "CHN"));
-                databaseHandler.addFence(new GeoFence("146.123","98.123","2","KOC"));
-                if (isInserted) {
-                    Log.d("Insert: ", "Inserted ..");
-                    Toast.makeText(getApplicationContext(),"Fences Added",Toast.LENGTH_LONG).show();
-                    fenceList = databaseHandler.getAllGeoFence();
-                    for(GeoFence geoFence : fenceList){
-                        String log = "Id: "+geoFence.getId()+" ,Lattitude: " + geoFence.getLat() + " ,Longittude: " +geoFence.getLng() + "  ,Radius: " +geoFence.getRadius() +" ,FenceName: " +
-                                geoFence.getFenceName();
-                        // Writing Contacts to log
-                        Log.d("Fences: ", log);
-                    }
-                }*/
 
                 Intent intent = new Intent(MainActivity.this, FenceTimingActivity.class);
                 startActivity(intent);
@@ -444,7 +430,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
      */
     public void onResult(Status status) {
         if (status.isSuccess()) {
-            Toast.makeText(this, "Geo fences added", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Geo fences added", Toast.LENGTH_SHORT).show();
         } else {
             // Get the status code for the error and log it using a user-friendly message.
             String errorMessage = GeofenceErrorMessages.getErrorString(this,

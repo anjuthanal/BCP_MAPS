@@ -16,12 +16,15 @@
 
 package com.bcp.bcp.gcm;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.util.Patterns;
 
 import com.bcp.bcp.R;
 import com.google.android.gms.gcm.GcmPubSub;
@@ -29,11 +32,20 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
 
 import java.io.IOException;
+import java.util.regex.Pattern;
+
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class RegistrationIntentService extends IntentService {
 
     private static final String TAG = "RegIntentService";
     private static final String[] TOPICS = {"global"};
+    private final OkHttpClient client = new OkHttpClient();
+    String token;
 
     public RegistrationIntentService() {
         super(TAG);
@@ -51,7 +63,7 @@ public class RegistrationIntentService extends IntentService {
             // See https://developers.google.com/cloud-messaging/android/start for details on this file.
             // [START get_token]
             InstanceID instanceID = InstanceID.getInstance(this);
-            String token = instanceID.getToken(getString(R.string.gcm_SenderId), "GCM");
+             token = instanceID.getToken(getString(R.string.gcm_SenderId), "GCM");
             // [END get_token]
             Log.i(TAG, "GCM Registration Token: " + token);
 
@@ -87,6 +99,28 @@ public class RegistrationIntentService extends IntentService {
      */
     private void sendRegistrationToServer(String token) {
         // Add custom implementation, as needed.
+
+
+
+        String email = getMailId();
+        RequestBody formBody = new FormBody.Builder()
+                .add("email", email)
+                .add("regID", token)
+                .build();
+        Request request = new Request.Builder()
+                .url("https://script.google.com/macros/s/AKfycby_VMR1U313MuYLvOk4pzfYd8Ta1YicxS26fzhhN5A0W33Ipho/exec")
+                .post(formBody)
+                .build();
+        try{
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+            Log.e("Server response : ",response.toString());
+            System.out.println(response.body().string());
+
+        }catch (Exception e){
+
+        }
+
     }
 
     /**
@@ -103,5 +137,24 @@ public class RegistrationIntentService extends IntentService {
         }
     }
     // [END subscribe_topics]
+
+
+    private String getMailId(){
+
+        String email = "";
+        Pattern gmailPattern = Patterns.EMAIL_ADDRESS;
+        Account[] accounts = AccountManager.get(this).getAccounts();
+
+        for (Account account : accounts) {
+
+            if (gmailPattern.matcher(account.name).matches()) {
+
+                email = account.name;
+
+            }
+
+        }
+        return email;
+    }
 
 }
