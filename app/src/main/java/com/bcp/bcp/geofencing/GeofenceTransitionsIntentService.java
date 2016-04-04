@@ -16,6 +16,8 @@
 
 package com.bcp.bcp.geofencing;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -28,8 +30,10 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.Patterns;
 import android.widget.Toast;
 
+import com.bcp.bcp.Credentials;
 import com.bcp.bcp.MainActivity;
 import com.bcp.bcp.MyLocationService;
 import com.bcp.bcp.R;
@@ -39,10 +43,15 @@ import com.bcp.bcp.database.GeoFence;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Listener for geofence transition changes.
@@ -55,7 +64,9 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
     protected static final String TAG = "GeofenceTransitionsIS";
     DatabaseHandler databaseHandler;
-
+    public String gaddress,gstatus,gEntryDate;
+    private Credentials credentials;
+    String gemail = "";
     /**
      * This constructor is required, and calls the super IntentService(String)
      * constructor with the name for a worker thread.
@@ -134,11 +145,27 @@ public class GeofenceTransitionsIntentService extends IntentService {
         String triggeringGeofencesIdsString = TextUtils.join(", ", triggeringGeofencesIdsList);
         Date curDate = new Date();
         SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
-        String dEntryDate = format.format(curDate);
+         gEntryDate = format.format(curDate);
         boolean isInserted;
 
+        gaddress = triggeringGeofencesIdsList.toString();
+        gstatus = geofenceTransitionString;
+
+        Pattern gmailPattern = Patterns.EMAIL_ADDRESS;
+        Account[] accounts = AccountManager.get(this).getAccounts();
+
+        for (Account account : accounts) {
+
+            if (gmailPattern.matcher(account.name).matches()) {
+
+                gemail = account.name;
+
+            }
+
+        }
+
         databaseHandler = new DatabaseHandler(this);
-        isInserted = databaseHandler.addFEnceTiming(new FenceTiming(triggeringGeofencesIdsList.toString(), geofenceTransitionString, dEntryDate));
+        isInserted = databaseHandler.addFEnceTiming(new FenceTiming(triggeringGeofencesIdsList.toString(), geofenceTransitionString, gEntryDate));
         if (isInserted) {
             Log.e("GeofenceonsIS : ", "inserted to db");
         }
@@ -149,6 +176,9 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
         SharedPreferences pref = getApplicationContext().getSharedPreferences("Shared", MODE_PRIVATE);
         SharedPreferences.Editor mEditor = pref.edit();
+        credentials = new Credentials();
+
+        //status:exit Switch : ON
         if (geofenceTransitionString.equalsIgnoreCase("Exited")) {
             if (pref.getBoolean("SWITCH", false)) {
                 //if switch is ON
@@ -159,15 +189,61 @@ public class GeofenceTransitionsIntentService extends IntentService {
                 Intent intent = new Intent(this, MyLocationService.class);
                 startService(intent);
 
+                //geo fusion table entry
+                if (pref.getBoolean("EntryInsertedToGeo", false)) {
+
+                }else{
+                    credentials.insertIntoGeoFusionTables(this.saveGeoFile(gaddress, gstatus, gEntryDate, gemail));
+                    mEditor.putBoolean("EntryInsertedToGeo", true);
+                    mEditor.commit();
+                }
+
             } else {
                 //if switch is OFF
+                //  no entry
+
+            }
+            //status :Entry Switch : ON
+        } else{
+            if (pref.getBoolean("SWITCH", false)) {
+                //if switch is ON
+
+                if (pref.getBoolean("ExitInsertedToGeo", false)) {
+
+                }else{
+                    credentials.insertIntoGeoFusionTables(this.saveGeoFile(gaddress, gstatus, gEntryDate, gemail));
+                    mEditor.putBoolean("ExitInsertedToGeo", true);
+                    mEditor.commit();
+                }
+
+            } else {
 
 
             }
-            //INSERT into fusion table lat/long
-            //time interval from shared pref, which is stored from push notification
+
         }
         return geofenceTransitionString + ": " + triggeringGeofencesIdsString;
+    }
+
+
+    public File saveGeoFile(String address, String status,String date,String mail) {
+
+        String textToSave = address + "," + status + "," + date + "," + mail;
+        File myFile = null;
+        try {
+            myFile = new File("/sdcard/myFile");
+            myFile.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(myFile);
+            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+            myOutWriter.append(textToSave);
+            myOutWriter.close();
+            fOut.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Log.e("saveGeoFile " ,textToSave);
+
+        return myFile;
     }
 
     /**

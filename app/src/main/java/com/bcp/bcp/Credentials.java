@@ -103,6 +103,7 @@ public class Credentials {
         return myFile;
     }
 
+    //Lattitude/Longitude Table
     public void insertIntoFusionTables(File file) {
         initializeGoogleCredential();
         String tableId;
@@ -116,6 +117,21 @@ public class Credentials {
             e2.printStackTrace();
         }
     }
+
+    public void insertIntoGeoFusionTables(File file) {
+        initializeGoogleCredential();
+        String tableId;
+        try {
+            tableId = "1N9Z1zMN0IaesNlYsmAG2iNXJbLCMXEUgPffklAOK";
+            mDrive.permissions().create(tableId, getPermission()).execute();
+
+            mFusionTable.table().importRows(tableId,
+                    new FileContent("application/octet-stream", file)).execute();
+        } catch (IOException e2) {
+            e2.printStackTrace();
+        }
+    }
+
 
     public long getTimeFromConfigTable() {
         initializeGoogleCredential();

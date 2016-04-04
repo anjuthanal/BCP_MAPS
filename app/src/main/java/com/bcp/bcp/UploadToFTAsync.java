@@ -74,7 +74,7 @@ public class UploadToFTAsync extends AsyncTask<Void,Void,Void> {
             mContext.startService(intent);
         }else{
             if(mContext!=null){
-                Toast.makeText(mContext, "Location updated to fution table ", Toast.LENGTH_LONG).show();
+                Toast.makeText(mContext, "Location updated to fusion table ", Toast.LENGTH_LONG).show();
             }
 
         }
