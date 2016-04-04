@@ -1,12 +1,12 @@
 /**
  * Copyright 2014 Google Inc. All Rights Reserved.
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p/>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -117,7 +117,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
      * @param context               The app context.
      * @param geofenceTransition    The ID of the geofence transition.
      * @param triggeringGeofences   The geofence(s) triggered.
-     * @return                      The transition details formatted as String.
+     * @return The transition details formatted as String.
      */
     private String getGeofenceTransitionDetails(
             Context context,
@@ -131,29 +131,28 @@ public class GeofenceTransitionsIntentService extends IntentService {
         for (Geofence geofence : triggeringGeofences) {
             triggeringGeofencesIdsList.add(geofence.getRequestId());
         }
-        String triggeringGeofencesIdsString = TextUtils.join(", ",  triggeringGeofencesIdsList);
+        String triggeringGeofencesIdsString = TextUtils.join(", ", triggeringGeofencesIdsList);
         Date curDate = new Date();
         SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
         String dEntryDate = format.format(curDate);
         boolean isInserted;
 
         databaseHandler = new DatabaseHandler(this);
-        isInserted = databaseHandler.addFEnceTiming(new FenceTiming(triggeringGeofencesIdsList.toString(),geofenceTransitionString,dEntryDate));
-        if(isInserted)
-        {
-           Log.e("GeofenceonsIS : ","inserted to db");
+        isInserted = databaseHandler.addFEnceTiming(new FenceTiming(triggeringGeofencesIdsList.toString(), geofenceTransitionString, dEntryDate));
+        if (isInserted) {
+            Log.e("GeofenceonsIS : ", "inserted to db");
         }
 
-        //insert into new frence breach fution table for each entry exit //no conditions
+        //insert into new frence breach fusion table for each entry exit //no conditions
 
         //When switch is ON  and we are breaching a fence (entering) we will write that data to FT When switch is ON and we are breaching fence(exiting) we will write that data to FT as well.
 
         SharedPreferences pref = getApplicationContext().getSharedPreferences("Shared", MODE_PRIVATE);
         SharedPreferences.Editor mEditor = pref.edit();
-        if(geofenceTransitionString.equalsIgnoreCase(getString(R.string.geofence_transition_exited))) {
+        if (geofenceTransitionString.equalsIgnoreCase("Exited")) {
             if (pref.getBoolean("SWITCH", false)) {
                 //if switch is ON
-                String timeValue = pref.getString("Time_Interval", "10000");
+                String timeValue = pref.getString("Time_Interval", "60000");
                 long configurableTime = Long.parseLong(timeValue);
                 mEditor.putLong("CONFIG TIME", configurableTime);
                 mEditor.commit();
@@ -163,8 +162,9 @@ public class GeofenceTransitionsIntentService extends IntentService {
             } else {
                 //if switch is OFF
 
+
             }
-            //INSERT into fution table lat/long
+            //INSERT into fusion table lat/long
             //time interval from shared pref, which is stored from push notification
         }
         return geofenceTransitionString + ": " + triggeringGeofencesIdsString;
@@ -220,7 +220,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
      * Maps geofence transition types to their human-readable equivalents.
      *
      * @param transitionType    A transition type constant defined in Geofence
-     * @return                  A String indicating the type of transition
+     * @return A String indicating the type of transition
      */
     private String getTransitionString(int transitionType) {
         switch (transitionType) {

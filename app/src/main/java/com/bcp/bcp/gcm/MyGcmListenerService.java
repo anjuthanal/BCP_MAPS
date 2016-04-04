@@ -60,8 +60,8 @@ public class MyGcmListenerService extends GcmListenerService {
         // save the message to shared prefferences
         SharedPreferences pref = getApplicationContext().getSharedPreferences("Shared", MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
-        editor.putString("Time_Interval", "10000");
-       // editor.putString("Time_Interval", message);
+//        editor.putString("Time_Interval", "10000");
+        editor.putString("Time_Interval", message);
         editor.commit();
 
         // [END_EXCLUDE]
