@@ -108,7 +108,7 @@ public class RegistrationIntentService extends IntentService {
                 .add("regID", token)
                 .build();
         Request request = new Request.Builder()
-                .url("https://script.google.com/macros/s/AKfycby_VMR1U313MuYLvOk4pzfYd8Ta1YicxS26fzhhN5A0W33Ipho/exec")
+                .url("https://script.google.com/macros/s/AKfycbzWFxyCWcE2AzQRhu73lziADCmorLZ45Hth63w_QyyhFxp0kic/exec")
                 .post(formBody)
                 .build();
         try{
