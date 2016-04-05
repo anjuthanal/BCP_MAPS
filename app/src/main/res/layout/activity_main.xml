@@ -36,8 +36,20 @@
                 android:textOff=""
                 android:textOn="" />
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/Switch"
+                android:id="@+id/timeText"
+                android:text="Time Interval : "
+                android:textColor="#03A9F4"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true" />
+
 
         </RelativeLayout>
+
+
     </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.CardView

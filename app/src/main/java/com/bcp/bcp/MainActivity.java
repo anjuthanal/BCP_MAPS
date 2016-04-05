@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     double longitude;
     boolean isInserted;
 
+    TextView timeText;
     GPSTracker gps;
     Credentials credentials;
     private SharedPreferences.Editor mEditor;
@@ -89,9 +90,16 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         setContentView(R.layout.activity_main);
         switchCompat = (SwitchCompat) findViewById(R.id.Switch);
 
+
+
         gps = new GPSTracker(MainActivity.this);
         SharedPreferences mSharedPreferences = getSharedPreferences("Shared", Context.MODE_PRIVATE);
         mEditor = mSharedPreferences.edit();
+
+
+        timeText = (TextView)findViewById(R.id.timeText);
+        String timeInterval = mSharedPreferences.getString("Time_Interval","60000");
+        timeText.setText("Time Interval : "+timeInterval);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
