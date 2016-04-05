@@ -31,7 +31,6 @@ import android.support.v4.app.TaskStackBuilder;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Patterns;
-import android.widget.Toast;
 
 import com.bcp.bcp.Credentials;
 import com.bcp.bcp.MainActivity;
@@ -39,14 +38,12 @@ import com.bcp.bcp.MyLocationService;
 import com.bcp.bcp.R;
 import com.bcp.bcp.database.DatabaseHandler;
 import com.bcp.bcp.database.FenceTiming;
-import com.bcp.bcp.database.GeoFence;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -178,9 +175,9 @@ public class GeofenceTransitionsIntentService extends IntentService {
         SharedPreferences.Editor mEditor = pref.edit();
         credentials = new Credentials();
 
-        //status:exit Switch : ON
+        //status:exit
         if (geofenceTransitionString.equalsIgnoreCase("Exited")) {
-            if (pref.getBoolean("SWITCH", false)) {
+            if (pref.getBoolean("SWITCH", false)) {//Switch : ON
                 //if switch is ON
                 String timeValue = pref.getString("Time_Interval", "60000");
                 long configurableTime = Long.parseLong(timeValue);
@@ -189,49 +186,24 @@ public class GeofenceTransitionsIntentService extends IntentService {
                 Intent intent = new Intent(this, MyLocationService.class);
                 startService(intent);
 
-                //geo fusion table entry
-                if (pref.getBoolean("EntryInsertedToGeo", false)) {
+                credentials.insertIntoGeoFusionTables(this.saveGeoFile(gaddress, gstatus, gEntryDate, gemail, "geofile"));
 
-                }else{
-                    credentials.insertIntoGeoFusionTables(this.saveGeoFile(gaddress, gstatus, gEntryDate, gemail));
-                    mEditor.putBoolean("EntryInsertedToGeo", true);
-                    mEditor.commit();
-                }
-
-            } else {
-                //if switch is OFF
-                //  no entry
-
-            }
-            //status :Entry Switch : ON
-        } else{
-            if (pref.getBoolean("SWITCH", false)) {
-                //if switch is ON
-
-                if (pref.getBoolean("ExitInsertedToGeo", false)) {
-
-                }else{
-                    credentials.insertIntoGeoFusionTables(this.saveGeoFile(gaddress, gstatus, gEntryDate, gemail));
-                    mEditor.putBoolean("ExitInsertedToGeo", true);
-                    mEditor.commit();
-                }
-
-            } else {
-
-
+            } else {//Switch : OFF
             }
 
+        } else if(geofenceTransitionString.equalsIgnoreCase("Entered")){//status :Entry
+            credentials.insertIntoGeoFusionTables(this.saveGeoFile(gaddress, gstatus, gEntryDate, gemail, "geofile"));
         }
         return geofenceTransitionString + ": " + triggeringGeofencesIdsString;
     }
 
 
-    public File saveGeoFile(String address, String status,String date,String mail) {
+    public File saveGeoFile(String address, String status, String date, String mail, String geofile) {
 
         String textToSave = address + "," + status + "," + date + "," + mail;
         File myFile = null;
         try {
-            myFile = new File("/sdcard/myFile");
+            myFile = new File("/sdcard/" + geofile);
             myFile.createNewFile();
             FileOutputStream fOut = new FileOutputStream(myFile);
             OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
