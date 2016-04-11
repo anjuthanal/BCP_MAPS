@@ -50,6 +50,7 @@ public final class Constants {
         BAY_AREA_LANDMARKS.put("Google Office", new LatLng(17.4596285, 78.372763));
         BAY_AREA_LANDMARKS.put("Cognizant PKN office", new LatLng(12.948016, 80.209280));
         BAY_AREA_LANDMARKS.put("Cognizant CKC office", new LatLng(12.913377, 80.219067));
-
+        BAY_AREA_LANDMARKS.put("Cognizant Coimbatore office", new LatLng(11.1037705,76.9852984));
+        BAY_AREA_LANDMARKS.put("Pune DLF", new LatLng(18.5842471,73.7334362));
     }
 }

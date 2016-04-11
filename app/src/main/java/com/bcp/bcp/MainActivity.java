@@ -70,7 +70,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     Credentials credentials;
     private SharedPreferences.Editor mEditor;
 
-
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private static final String TAG = "MainActivity";
 
@@ -96,10 +95,19 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         SharedPreferences mSharedPreferences = getSharedPreferences("Shared", Context.MODE_PRIVATE);
         mEditor = mSharedPreferences.edit();
 
+        gps = new GPSTracker(this);
 
+        if (gps.canGetLocation()) {
+            latitude = gps.getLatitude();
+            longitude = gps.getLongitude();
+
+            Log.e("latitude", "" + latitude);
+            Log.e("longitude", "" + longitude);
+
+        }
         timeText = (TextView)findViewById(R.id.timeText);
         String timeInterval = mSharedPreferences.getString("Time_Interval","60000");
-        timeText.setText("Time Interval : "+timeInterval);
+        timeText.setText("Time Interval : " + timeInterval);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling

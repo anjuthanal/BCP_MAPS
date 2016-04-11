@@ -59,7 +59,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     }
 
-    public boolean addFEnceTiming(FenceTiming fenceTiming){
+    public boolean addFenceTiming(FenceTiming fenceTiming){
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
         boolean isInserted = false;
 

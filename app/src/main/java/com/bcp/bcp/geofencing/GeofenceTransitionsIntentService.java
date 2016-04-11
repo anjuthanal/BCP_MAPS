@@ -64,6 +64,9 @@ public class GeofenceTransitionsIntentService extends IntentService {
     public String gaddress,gstatus,gEntryDate;
     private Credentials credentials;
     String gemail = "";
+    private SharedPreferences mPref;
+    private SharedPreferences.Editor mEditor;
+
     /**
      * This constructor is required, and calls the super IntentService(String)
      * constructor with the name for a worker thread.
@@ -93,25 +96,44 @@ public class GeofenceTransitionsIntentService extends IntentService {
             return;
         }
 
+        databaseHandler = new DatabaseHandler(this);
+        mPref = getApplicationContext().getSharedPreferences("Shared", MODE_PRIVATE);
+        mEditor = mPref.edit();
+        credentials = new Credentials();
+
         // Get the transition type.
         int geofenceTransition = geofencingEvent.getGeofenceTransition();
 
         // Test that the reported transition was of interest.
-        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER ||
-                geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
+        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER || geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
 
             // Get the geofences that were triggered. A single event can trigger multiple geofences.
             List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
 
             // Get the transition details as a String.
-            String geofenceTransitionDetails = getGeofenceTransitionDetails(
-                    this,
-                    geofenceTransition,
-                    triggeringGeofences
-            );
+            String geofenceTransitionDetails = getGeofenceTransitionDetails(this, geofenceTransition, triggeringGeofences);
 
             // Send notification and log the transition details.
-            sendNotification(geofenceTransitionDetails);
+            if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
+                if (!mPref.getBoolean(geofenceTransitionDetails, false)) {
+                    sendNotification(geofenceTransitionDetails);
+                    mEditor.putBoolean(geofenceTransitionDetails, true);
+                    String [] geoFenceState = geofenceTransitionDetails.split(": ");
+                    mEditor.putBoolean(getString(R.string.geofence_transition_exited) + ": " + geoFenceState[1], false);
+                    mEditor.commit();
+                }
+            }
+
+            if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
+                if (!mPref.getBoolean(geofenceTransitionDetails, false)) {
+                    sendNotification(geofenceTransitionDetails);
+                    mEditor.putBoolean(geofenceTransitionDetails, true);
+                    String [] geoFenceState = geofenceTransitionDetails.split(": ");
+                    mEditor.putBoolean(getString(R.string.geofence_transition_entered) + ": " + geoFenceState[1], false);
+                    mEditor.commit();
+                }
+            }
+
             Log.i(TAG, geofenceTransitionDetails);
         } else {
             // Log the error.
@@ -127,10 +149,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
      * @param triggeringGeofences   The geofence(s) triggered.
      * @return The transition details formatted as String.
      */
-    private String getGeofenceTransitionDetails(
-            Context context,
-            int geofenceTransition,
-            List<Geofence> triggeringGeofences) {
+    private String getGeofenceTransitionDetails(Context context, int geofenceTransition, List<Geofence> triggeringGeofences) {
 
         String geofenceTransitionString = getTransitionString(geofenceTransition);
 
@@ -142,7 +161,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
         String triggeringGeofencesIdsString = TextUtils.join(", ", triggeringGeofencesIdsList);
         Date curDate = new Date();
         SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
-         gEntryDate = format.format(curDate);
+        gEntryDate = format.format(curDate);
         boolean isInserted;
 
         gaddress = triggeringGeofencesIdsList.toString();
@@ -152,34 +171,20 @@ public class GeofenceTransitionsIntentService extends IntentService {
         Account[] accounts = AccountManager.get(this).getAccounts();
 
         for (Account account : accounts) {
-
             if (gmailPattern.matcher(account.name).matches()) {
-
                 gemail = account.name;
-
             }
-
-        }
-
-        databaseHandler = new DatabaseHandler(this);
-        isInserted = databaseHandler.addFEnceTiming(new FenceTiming(triggeringGeofencesIdsList.toString(), geofenceTransitionString, gEntryDate));
-        if (isInserted) {
-            Log.e("GeofenceonsIS : ", "inserted to db");
         }
 
         //insert into new frence breach fusion table for each entry exit //no conditions
 
         //When switch is ON  and we are breaching a fence (entering) we will write that data to FT When switch is ON and we are breaching fence(exiting) we will write that data to FT as well.
 
-        SharedPreferences pref = getApplicationContext().getSharedPreferences("Shared", MODE_PRIVATE);
-        SharedPreferences.Editor mEditor = pref.edit();
-        credentials = new Credentials();
-
         //status:exit
         if (geofenceTransitionString.equalsIgnoreCase("Exited")) {
-            if (pref.getBoolean("SWITCH", false)) {//Switch : ON
+            if (mPref.getBoolean("SWITCH", false)) {//Switch : ON
                 //if switch is ON
-                String timeValue = pref.getString("Time_Interval", "60000");
+                String timeValue = mPref.getString("Time_Interval", "60000");
                 long configurableTime = Long.parseLong(timeValue);
                 mEditor.putLong("CONFIG TIME", configurableTime);
                 mEditor.commit();
@@ -193,8 +198,31 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
         } else if(geofenceTransitionString.equalsIgnoreCase("Entered")){//status :Entry
             credentials.insertIntoGeoFusionTables(this.saveGeoFile(gaddress, gstatus, gEntryDate, gemail, "geofile"));
+            /*if (mPref.getBoolean("SWITCH", false)) {//Switch : ON
+                //if switch is ON
+                String timeValue = mPref.getString("Time_Interval", "60000");
+                long configurableTime = Long.parseLong(timeValue);
+                mEditor.putLong("CONFIG TIME", configurableTime);
+                mEditor.commit();
+                Intent intent = new Intent(this, MyLocationService.class);
+                startService(intent);
+
+                credentials.insertIntoGeoFusionTables(this.saveGeoFile(gaddress, gstatus, gEntryDate, gemail, "geofile"));
+
+            } else {//Switch : OFF
+            }*/
         }
-        return geofenceTransitionString + ": " + triggeringGeofencesIdsString;
+
+        String geoFenceDetailString = geofenceTransitionString + ": " + triggeringGeofencesIdsString;
+
+        if (!mPref.getBoolean(geoFenceDetailString, false)) {
+            isInserted = databaseHandler.addFenceTiming(new FenceTiming(triggeringGeofencesIdsList.toString(), geofenceTransitionString, gEntryDate));
+            if (isInserted) {
+                Log.e("GeofenceonsIS : ", "inserted to db");
+            }
+        }
+
+        return geoFenceDetailString;
     }
 
 

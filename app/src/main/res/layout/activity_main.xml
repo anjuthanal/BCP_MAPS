@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#E1E1E1"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.bcp.bcp.MainActivity">
-
+    android:paddingTop="@dimen/activity_vertical_margin">
 
     <android.support.v7.widget.CardView
         android:id="@+id/cv"
@@ -37,14 +35,14 @@
                 android:textOn="" />
 
             <TextView
+                android:id="@+id/timeText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/Switch"
-                android:id="@+id/timeText"
-                android:text="Time Interval : "
-                android:textColor="#03A9F4"
+                android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true" />
+                android:layout_below="@+id/Switch"
+                android:text="Time Interval : "
+                android:textColor="#03A9F4" />
 
 
         </RelativeLayout>
@@ -55,9 +53,9 @@
     <android.support.v7.widget.CardView
         android:id="@+id/cvmap"
         android:layout_width="match_parent"
-        android:layout_height="400dp"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/cv"
-        android:layout_marginTop="20dp">
+        android:layout_marginTop="16dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -65,23 +63,28 @@
             android:padding="16dp">
 
             <ProgressBar
+                android:id="@+id/registrationProgressBar"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/registrationProgressBar" />
+                android:layout_height="wrap_content" />
 
-            <TextView android:text="@string/registering_message" android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <TextView
                 android:id="@+id/informationTextView"
-                android:textColor="#03A9F4"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="113dp" />
-            <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/imageButton"
+                android:layout_below="@+id/registrationProgressBar"
                 android:layout_centerHorizontal="true"
-                android:layout_marginTop="185dp"
+                android:layout_marginTop="24dp"
+                android:text="@string/registering_message"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="#03A9F4" />
+
+            <ImageButton
+                android:id="@+id/imageButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/informationTextView"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="32dp"
                 android:src="@mipmap/fence" />
 
             <!--<fragment
@@ -89,12 +92,6 @@
                 android:name="com.google.android.gms.maps.MapFragment"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />-->
-
-
         </RelativeLayout>
     </android.support.v7.widget.CardView>
-
-
-
-
 </RelativeLayout>
