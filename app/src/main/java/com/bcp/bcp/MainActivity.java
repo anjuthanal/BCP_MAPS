@@ -51,6 +51,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, OnMapReadyCallback, LocationListener,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status> {
@@ -59,11 +60,12 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     LocationManager locationManager;
     Criteria criteria;
-    String bestProvider;
+    String bestProvider,timeValue;
     Location location;
     double latitude;
     double longitude;
     boolean isInserted;
+    long millisValue;
 
     TextView timeText;
     GPSTracker gps;
@@ -107,7 +109,9 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         }
         timeText = (TextView)findViewById(R.id.timeText);
         String timeInterval = mSharedPreferences.getString("Time_Interval","60000");
-        timeText.setText("Time Interval : " + timeInterval);
+        millisValue = Long.valueOf(timeInterval).longValue();
+        timeValue = new MainActivity().convert(millisValue);
+        timeText.setText("Time Interval : " + timeValue);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -454,6 +458,12 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             Log.e(TAG, errorMessage);
         }
     }
-
+    public String convert(long miliSeconds)
+    {
+        int hrs = (int) TimeUnit.MILLISECONDS.toHours(miliSeconds) % 24;
+        int min = (int) TimeUnit.MILLISECONDS.toMinutes(miliSeconds) % 60;
+        int sec = (int) TimeUnit.MILLISECONDS.toSeconds(miliSeconds) % 60;
+        return String.format("%02d:%02d:%02d", hrs, min, sec);
+    }
 
 }
