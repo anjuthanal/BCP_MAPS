@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     LocationManager locationManager;
     Criteria criteria;
-    String bestProvider,timeValue;
+    String bestProvider, timeValue;
     Location location;
     double latitude;
     double longitude;
@@ -92,7 +92,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         switchCompat = (SwitchCompat) findViewById(R.id.Switch);
 
 
-
         gps = new GPSTracker(MainActivity.this);
         SharedPreferences mSharedPreferences = getSharedPreferences("Shared", Context.MODE_PRIVATE);
         mEditor = mSharedPreferences.edit();
@@ -107,10 +106,10 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             Log.e("longitude", "" + longitude);
 
         }
-        timeText = (TextView)findViewById(R.id.timeText);
-        String timeInterval = mSharedPreferences.getString("Time_Interval","60000");
-        millisValue = Long.valueOf(timeInterval).longValue();
-        timeValue = new MainActivity().convert(millisValue);
+        timeText = (TextView) findViewById(R.id.timeText);
+        String timeInterval = mSharedPreferences.getString("Time_Interval", "86399999");//24 hrs/1 day by default
+        millisValue = Long.parseLong(timeInterval);
+        timeValue = convert(millisValue);
         timeText.setText("Time Interval : " + timeValue);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -458,11 +457,13 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             Log.e(TAG, errorMessage);
         }
     }
-    public String convert(long miliSeconds)
-    {
+
+    public String convert(long miliSeconds) {
         int hrs = (int) TimeUnit.MILLISECONDS.toHours(miliSeconds) % 24;
         int min = (int) TimeUnit.MILLISECONDS.toMinutes(miliSeconds) % 60;
         int sec = (int) TimeUnit.MILLISECONDS.toSeconds(miliSeconds) % 60;
+        Log.e("dd", hrs + "m" + min + "s" + sec);
+
         return String.format("%02d:%02d:%02d", hrs, min, sec);
     }
 
