@@ -176,7 +176,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
             }
         }
 
-        //insert into new frence breach fusion table for each entry exit //no conditions
+        //insert into new fence breach fusion table for each entry exit //no conditions
 
         //When switch is ON  and we are breaching a fence (entering) we will write that data to FT When switch is ON and we are breaching fence(exiting) we will write that data to FT as well.
 

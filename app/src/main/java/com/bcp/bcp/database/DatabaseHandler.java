@@ -31,6 +31,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_DATETIME = "Datetime";
 
 
+    private static final String TABLE_LOCATION = "locationtable";
+    private static final String KEY_LOCATIONID = "id";
+    private static final String KEY_LOCATIONADDRESS = "locationAddress";
+    private static final String KEY_LOCDATETIME = "LocDatetime";
+
     public DatabaseHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         //3rd argument to be passed is CursorFactory instance
@@ -47,6 +52,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 + KEY_TIMINGID + " INTEGER PRIMARY KEY, " + KEY_FENCEADDRESS + " TEXT,"+ KEY_STATUS + " TEXT," +KEY_DATETIME + " TEXT" + ")";
         db.execSQL(CREATE_FENCETIMING_TABLE);
 
+        String CREATE_TABLE_LOCATION = "CREATE TABLE " + TABLE_LOCATION + "("
+                + KEY_LOCATIONID + " INTEGER PRIMARY KEY, " + KEY_LOCATIONADDRESS + " TEXT,"+KEY_LOCDATETIME + " TEXT" + ")";
+        db.execSQL(CREATE_TABLE_LOCATION);
+
     }
 
     @Override
@@ -54,10 +63,58 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         // Drop older table if existed
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_GEOFENCE);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_FENCETIMING);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_LOCATION);
         // Create tables again
         onCreate(db);
 
     }
+
+
+    public boolean addLocation(LocationData locationData){
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        boolean isInserted = false;
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_LOCATIONADDRESS, locationData.getLocAddress());
+        values.put(KEY_LOCDATETIME, locationData.getLocDatetime());
+
+        if(values!=null) {
+            // Inserting Row
+            sqLiteDatabase.insert(TABLE_LOCATION, null, values);
+            isInserted = true;
+        }
+        //2nd argument is String containing nullColumnHack
+        sqLiteDatabase.close(); // Closing database connection
+
+        return isInserted;
+    }
+
+    public List<LocationData> getAllLocationData() {
+        List<LocationData> locationDataList = new ArrayList<LocationData>();
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_LOCATION;
+
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                LocationData locationData = new LocationData();
+                locationData.setId(Integer.parseInt(cursor.getString(0)));
+                locationData.setLocAddress(cursor.getString(1));
+                locationData.setLocDatetime(cursor.getString(2));
+
+                // Adding contact to list
+                locationDataList.add(locationData);
+            } while (cursor.moveToNext());
+        }
+
+        // return contact list
+        return locationDataList;
+    }
+
+
 
     public boolean addFenceTiming(FenceTiming fenceTiming){
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
