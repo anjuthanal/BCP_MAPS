@@ -1,5 +1,6 @@
 package com.bcp.bcp.recyclerview;
 
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,8 +44,21 @@ public class LocationDetailsAdapter extends RecyclerView.Adapter<LocationDetails
     @Override
     public void onBindViewHolder(LocationDetailsAdapter.MyViewHolder holder, int position) {
         LocationFenceTrackDetails locationFenceTrackDetailsObj = locationFenceTrackDetails.get(position);
-        holder.address.setText(locationFenceTrackDetailsObj.getAddress());
+        if(locationFenceTrackDetailsObj.getStatus().equalsIgnoreCase("Exited"))
+        {
+            holder.address.setTextColor(Color.parseColor("#6699ff"));
+            holder.address.setText(locationFenceTrackDetailsObj.getAddress());
+
+        }else if(locationFenceTrackDetailsObj.getStatus().equalsIgnoreCase("Entered")){
+            holder.address.setTextColor(Color.parseColor("#ffff00"));
+            holder.address.setText(locationFenceTrackDetailsObj.getAddress());
+        }else{
+            holder.address.setTextColor(Color.parseColor("#ffffff"));
+            holder.address.setTextSize(5);
+            holder.address.setText(locationFenceTrackDetailsObj.getAddress());
+        }
         holder.time.setText(locationFenceTrackDetailsObj.getTime());
+        holder.time.setTextColor(Color.parseColor("#ffffff"));
 
     }
 
