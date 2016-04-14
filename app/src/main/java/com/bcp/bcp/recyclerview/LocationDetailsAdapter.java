@@ -44,6 +44,8 @@ public class LocationDetailsAdapter extends RecyclerView.Adapter<LocationDetails
     @Override
     public void onBindViewHolder(LocationDetailsAdapter.MyViewHolder holder, int position) {
         LocationFenceTrackDetails locationFenceTrackDetailsObj = locationFenceTrackDetails.get(position);
+        String address = locationFenceTrackDetailsObj.getAddress();
+        String addrTodisplay = address.replace(",","\n");
         if(locationFenceTrackDetailsObj.getStatus().equalsIgnoreCase("Exited"))
         {
             holder.address.setTextColor(Color.parseColor("#6699ff"));
@@ -54,11 +56,12 @@ public class LocationDetailsAdapter extends RecyclerView.Adapter<LocationDetails
             holder.address.setText(locationFenceTrackDetailsObj.getAddress());
         }else{
             holder.address.setTextColor(Color.parseColor("#ffffff"));
-            holder.address.setTextSize(5);
-            holder.address.setText(locationFenceTrackDetailsObj.getAddress());
+            holder.address.setTextSize(10);
+            holder.address.setText(addrTodisplay);
         }
         holder.time.setText(locationFenceTrackDetailsObj.getTime());
         holder.time.setTextColor(Color.parseColor("#ffffff"));
+        holder.time.setTextSize(10);
 
     }
 
