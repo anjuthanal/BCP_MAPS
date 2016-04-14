@@ -40,6 +40,9 @@
         </activity>
 
         <activity
+            android:name=".recyclerview.ViewLocationActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".recyclerview.FenceTimingActivity"
             android:screenOrientation="portrait" />
 
