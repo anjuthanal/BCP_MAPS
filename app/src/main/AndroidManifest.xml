@@ -16,6 +16,8 @@
 
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
 
     <permission
@@ -89,6 +91,25 @@
         <service android:name="com.bcp.bcp.geofencing.GeofenceTransitionsIntentService" />
 
         <service android:name="com.bcp.bcp.MyLocationService" />
+
+        <receiver android:name="com.mobstac.beaconstac.core.DismissNotification">
+            <intent-filter>
+                <action android:name="com.mobstac.beaconstac.core.DismissNotification" />
+            </intent-filter>
+        </receiver>
+
+        <service android:name="com.mobstac.beaconstac.core.MSBLEService" />
+        <service android:name="com.mobstac.beaconstac.core.BTToggleService" />
+
+        <service android:name="com.mobstac.beaconstac.core.MSGeofenceTransitionIntentService" />
+
+        <provider
+            android:name=".beacon.BeaconContentProvider"
+            android:authorities="@string/provider"
+            android:enabled="true"
+            android:exported="false"
+            android:grantUriPermissions="true" />
+
     </application>
 
 </manifest>

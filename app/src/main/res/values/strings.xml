@@ -42,6 +42,8 @@
     <string name="geofence_transition_entered">Entered</string>
     <string name="geofence_transition_exited">Exited</string>
     <string name="unknown_geofence_transition">Unknown Transition</string>
-
+    <string name="location_permission_rationale">"Location permissions are needed for scanning BLE Beacons"
+    </string>
+    <string name="button_close">Dismiss</string>
     <string name="geofence_transition_notification_text">Click notification to return to app</string>
 </resources>

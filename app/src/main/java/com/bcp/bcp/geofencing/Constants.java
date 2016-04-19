@@ -33,6 +33,7 @@ public final class Constants {
      * stops tracking the geofence.
      */
     public static final long GEOFENCE_EXPIRATION_IN_HOURS = 12;
+    public final static String youtubeURLPattern = "(?:youtube(?:-nocookie)?\\.com\\/(?:[^\\/\\n\\s]+\\/\\S+\\/|(?:v|e(?:mbed)?)\\/|\\S*?[?&]v=)|youtu\\.be\\/)([a-zA-Z0-9_-]{11})";
 
     /**
      * For this sample, geofences expire after twelve hours.

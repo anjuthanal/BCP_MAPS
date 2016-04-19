@@ -1,9 +1,13 @@
 package com.bcp.bcp;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.PendingIntent;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -12,9 +16,13 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
@@ -22,20 +30,20 @@ import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.CompoundButton;
-import android.widget.ImageButton;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bcp.bcp.beacon.BeaconstacReceiver;
+import com.bcp.bcp.beacon.ImageCarouselDialog;
+import com.bcp.bcp.database.DatabaseHandler;
+import com.bcp.bcp.gcm.QuickstartPreferences;
+import com.bcp.bcp.gcm.RegistrationIntentService;
 import com.bcp.bcp.geofencing.Constants;
 import com.bcp.bcp.geofencing.GeofenceErrorMessages;
 import com.bcp.bcp.geofencing.GeofenceTransitionsIntentService;
-import com.bcp.bcp.database.DatabaseHandler;
-import com.bcp.bcp.database.GeoFence;
-import com.bcp.bcp.gcm.QuickstartPreferences;
-import com.bcp.bcp.gcm.RegistrationIntentService;
-import com.bcp.bcp.recyclerview.FenceTimingActivity;
 import com.bcp.bcp.recyclerview.ViewLocationActivity;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -50,14 +58,26 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.mobstac.beaconstac.core.Beaconstac;
+import com.mobstac.beaconstac.core.MSConstants;
+import com.mobstac.beaconstac.core.PlaceSyncReceiver;
+import com.mobstac.beaconstac.models.MSAction;
+import com.mobstac.beaconstac.models.MSCard;
+import com.mobstac.beaconstac.models.MSMedia;
+import com.mobstac.beaconstac.utils.MSException;
+import com.mobstac.beaconstac.utils.MSLogger;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 public class MainActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, OnMapReadyCallback, LocationListener,
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status> {
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status>, BeaconstacReceiver.OnRuleTriggered {
     private SwitchCompat switchCompat;
     private GoogleMap gmap;
 
@@ -67,7 +87,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     Location location;
     double latitude;
     double longitude;
-    boolean isInserted;
     long millisValue;
 
     TextView timeText;
@@ -76,18 +95,20 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     private SharedPreferences.Editor mEditor;
     CardView cardView;
 
+    private static final int REQUEST_ENABLE_BT = 1;
+    private static final int REQUEST_LOCATION = 2;
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private static final String TAG = "MainActivity";
 
     private BroadcastReceiver mRegistrationBroadcastReceiver;
-    private ProgressBar mRegistrationProgressBar;
-    private TextView mInformationTextView;
     private boolean isReceiverRegistered;
-    private ImageButton imageButton;
     DatabaseHandler databaseHandler;
-    List<GeoFence> fenceList;
     private ArrayList<Geofence> mGeofenceList;
     private PendingIntent mGeofencePendingIntent;
+
+    private BluetoothAdapter mBluetoothAdapter;
+    private BeaconstacReceiver receiver;
+    private Beaconstac bstac;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         gps = new GPSTracker(this);
 
 
-        cardView = (CardView)findViewById(R.id.carddb);
+        cardView = (CardView) findViewById(R.id.carddb);
 
         cardView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -159,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
         switchCompat.setOnCheckedChangeListener(this);
 
-      //  mRegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);
+        //  mRegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);
         mRegistrationBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -171,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 if (sentToken) {
 //                    mInformationTextView.setText(getString(R.string.gcm_send_message));
                 } else {
-  //                  mInformationTextView.setText(getString(R.string.token_error_message));
+                    //                  mInformationTextView.setText(getString(R.string.token_error_message));
                 }
             }
         };
@@ -185,12 +206,13 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             startService(intent);
         }
 
-
-
+        receiver = new BeaconstacReceiver();
+        receiver.setOnOnRuleTriggeredListener(this);
 
         populateGeofenceList();
-
         buildGoogleApiClient();
+
+        getBluetoothAdapter();//beacons
 
     }
 
@@ -453,7 +475,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
      */
     public void onResult(Status status) {
         if (status.isSuccess()) {
-            //Toast.makeText(this, "Geo fences added", Toast.LENGTH_SHORT).show();
         } else {
             // Get the status code for the error and log it using a user-friendly message.
             String errorMessage = GeofenceErrorMessages.getErrorString(this,
@@ -466,9 +487,287 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         int hrs = (int) TimeUnit.MILLISECONDS.toHours(miliSeconds) % 24;
         int min = (int) TimeUnit.MILLISECONDS.toMinutes(miliSeconds) % 60;
         int sec = (int) TimeUnit.MILLISECONDS.toSeconds(miliSeconds) % 60;
-        Log.e("dd", hrs + "m" + min + "s" + sec);
-
         return String.format("%02d:%02d:%02d", hrs, min, sec);
     }
 
+
+    private void getBluetoothAdapter() {
+        // Initializes a Bluetooth adapter.  For API level 18 and above, get a reference to
+        // BluetoothAdapter through BluetoothManager.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            BluetoothManager mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+            mBluetoothAdapter = mBluetoothManager.getAdapter();
+        }
+
+        // Checks if Bluetooth is supported on the device.
+        if (mBluetoothAdapter == null) {
+            Log.e(TAG, "Unable to obtain a BluetoothAdapter.");
+            Toast.makeText(this, "Unable to obtain a BluetoothAdapter", Toast.LENGTH_LONG).show();
+
+        } else {
+            if (!mBluetoothAdapter.isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            }
+        }
+
+        checkLocationPermission();
+    }
+
+    /**
+     * This method is called when "Scanning for beacons".
+     * This method checks API version and prompts to grant camera permission if API version is above ANDROID M
+     */
+    @TargetApi(Build.VERSION_CODES.M)
+    public void checkLocationPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            syncBeacon();
+            return;
+        }
+        if (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            syncBeacon();
+            return;
+        }
+        if (shouldShowRequestPermissionRationale(ACCESS_FINE_LOCATION)) {
+            Snackbar.make(switchCompat, R.string.location_permission_rationale, Snackbar.LENGTH_INDEFINITE)
+                    .setAction(android.R.string.ok, new View.OnClickListener() {
+                        @Override
+                        @TargetApi(Build.VERSION_CODES.M)
+                        public void onClick(View v) {
+                            requestPermissions(new String[]{ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+                        }
+                    }).show();
+        } else {
+            requestPermissions(new String[]{ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+        }
+    }
+
+    PlaceSyncReceiver placeSyncReceiver = new PlaceSyncReceiver() {
+
+        @Override
+        public void onSuccess(Context context) {
+            bstac.enableGeofences(true);
+
+            // start ranging
+            try {
+                bstac.startRangingBeacons();
+            } catch (MSException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onFailure(Context context) {
+            MSLogger.error("Error syncing geofence");
+        }
+
+    };
+
+    public void syncBeacon() {
+        Toast.makeText(this, "Scanning for beacons", Toast.LENGTH_LONG).show();
+        bstac = Beaconstac.getInstance(this);
+        bstac.setRegionParams("F94DBB23-2266-7822-3782-57BEAC0952AC", "com.bcp.bcp");
+        bstac.syncRules();
+
+
+        LocationManager locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (locManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+
+            bstac.syncPlaces();
+
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_PLACE_SYNC_SUCCESS);
+            intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_PLACE_SYNC_FAILURE);
+            registerReceiver(placeSyncReceiver, intentFilter);
+        } else {
+            try {
+                bstac.syncBeacons();
+                bstac.startRangingBeacons();
+            } catch (MSException e) {
+                e.printStackTrace();
+            }
+        }
+        registerBroadcast();
+    }
+
+    private void registerBroadcast() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_RANGED_BEACON);
+        intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_CAMPED_BEACON);
+        intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_EXITED_BEACON);
+        intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_RULE_TRIGGERED);
+        intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_ENTERED_REGION);
+        intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_EXITED_REGION);
+        registerReceiver(receiver, intentFilter);
+    }
+
+    /**
+     * Opens a dialogFragment to display offers
+     *
+     * @param title Title of dialog (pass null to hide title)
+     * @param text  Summary of dialog (pass null to hide summary)
+     * @param url   ArrayList containing URLs of images (pass null to hide images)
+     */
+    private void showPopupDialog(String title, String text, ArrayList<String> url) {
+
+        if(switchCompat.isChecked()){
+
+        }else{
+
+
+        }
+
+        if (!isPopupVisible) {
+           /* FragmentManager fragmentManager = getSupportFragmentManager();
+            ImageCarouselDialog imageCarouselDialog = ImageCarouselDialog.newInstance(title, text, url);
+            imageCarouselDialog.setRetainInstance(true);*/
+            isPopupVisible = true;
+
+//            imageCarouselDialog.show(fragmentManager, "Dialog Fragment");
+        }
+    }
+
+    public void setIsPopupVisible(boolean isPopupVisible) {
+        this.isPopupVisible = isPopupVisible;
+    }
+
+    private boolean isPopupVisible;
+
+    public static String getYoutubeVideoId(String videoUrl) {
+        if (videoUrl == null || videoUrl.trim().length() <= 0)
+            return null;
+
+        Pattern pattern = Pattern.compile(Constants.youtubeURLPattern, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(videoUrl);
+
+        if (matcher.find())
+            return matcher.group(1);
+        return null;
+    }
+
+    public void stopScanning() {
+        if (bstac != null) {
+            try {
+                bstac.stopRangingBeacons();
+            } catch (MSException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void onTriggeredRule(Context context, String ruleName, ArrayList<MSAction> actions) {
+
+        {
+            HashMap<String, Object> messageMap;
+            for (MSAction action : actions) {
+                messageMap = action.getMessage();
+                switch (action.getType()) {
+                    case MSActionTypePopup:
+                        if (!isPopupVisible) {
+                            showPopupDialog(ruleName, (String) messageMap.get("text"), null);
+                        }
+                        break;
+
+                    case MSActionTypeCard:
+                        if (!isPopupVisible) {
+                            MSCard card = (MSCard) messageMap.get("card");
+                            MSMedia m;
+                            String src;
+                            android.app.AlertDialog.Builder dialog;
+
+                            String title = ruleName;
+
+                            switch (card.getType()) {
+                                case MSCardTypePhoto:
+                                    ArrayList<String> urls = new ArrayList<>();
+                                    for (int i = 0; i < card.getMediaArray().size(); i++) {
+                                        m = card.getMediaArray().get(i);
+                                        src = m.getMediaUrl().toString();
+                                        urls.add(src);
+                                    }
+                                    showPopupDialog(title, null, urls);
+                                    break;
+                                case MSCardTypeSummary:
+                                    ArrayList<String> cardUrls = new ArrayList<>();
+                                    for (int i = 0; i < card.getMediaArray().size(); i++) {
+                                        m = card.getMediaArray().get(i);
+                                        src = m.getMediaUrl().toString();
+                                        cardUrls.add(src);
+                                    }
+                                    showPopupDialog(card.getTitle(), card.getBody(), cardUrls);
+                                    break;
+                                case MSCardTypeMedia:
+                                    m = card.getMediaArray().get(0);
+                                    src = m.getMediaUrl().toString();
+
+                                    // handle custom url types
+                                    String ytId = getYoutubeVideoId(src);
+                                    if (ytId != null) {
+//                                    showYoutubePopup(ytId, ok_label, ok_action);
+                                    } else {
+                                        dialog = new android.app.AlertDialog.Builder(context);
+                                        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                            @Override
+                                            public void onDismiss(DialogInterface dialog) {
+                                                isPopupVisible = false;
+                                            }
+                                        });
+                                        final WebView webView = new WebView(context);
+                                        webView.getSettings().setJavaScriptEnabled(true);
+                                        webView.setWebViewClient(new WebViewClient());
+                                        webView.loadUrl(src);
+                                        dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                dialog.dismiss();
+                                                try {
+                                                    Uri uri = Uri.parse("http://"); // missing 'http://' will cause crashed
+                                                    Intent openUrl = new Intent(Intent.ACTION_VIEW, uri);
+                                                    openUrl.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                                    startActivity(openUrl);
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        });
+
+                                        dialog.setView(webView);
+                                        dialog.setNeutralButton(getString(R.string.button_close), null);
+                                        dialog.show();
+                                    }
+
+                                    break;
+                            }
+                        }
+                        break;
+
+                    case MSActionTypeWebpage:
+                        if (!isPopupVisible) {
+                            final android.app.AlertDialog.Builder dialog = new android.app.AlertDialog.Builder(context);
+                            dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialog) {
+                                    isPopupVisible = false;
+                                }
+                            });
+
+                            final WebView webView = new WebView(context);
+                            webView.getSettings().setJavaScriptEnabled(true);
+                            webView.setWebViewClient(new WebViewClient());
+                            webView.loadUrl(messageMap.get("url").toString());
+
+                            dialog.setView(webView);
+                            dialog.setPositiveButton("Close", null);
+                            dialog.show();
+                        }
+                        break;
+
+                    case MSActionTypeCustom:
+                        MSLogger.log("Card id: " + action.getActionID());
+                        break;
+                }
+            }
+        }
+    }
 }
