@@ -39,6 +39,8 @@ import android.widget.Toast;
 import com.bcp.bcp.beacon.BeaconstacReceiver;
 import com.bcp.bcp.beacon.ImageCarouselDialog;
 import com.bcp.bcp.database.DatabaseHandler;
+import com.bcp.bcp.database.FenceTiming;
+import com.bcp.bcp.database.LocationData;
 import com.bcp.bcp.gcm.QuickstartPreferences;
 import com.bcp.bcp.gcm.RegistrationIntentService;
 import com.bcp.bcp.geofencing.Constants;
@@ -67,7 +69,10 @@ import com.mobstac.beaconstac.models.MSMedia;
 import com.mobstac.beaconstac.utils.MSException;
 import com.mobstac.beaconstac.utils.MSLogger;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -600,7 +605,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_EXITED_REGION);
         registerReceiver(receiver, intentFilter);
     }
-
+    boolean isInserted;
     /**
      * Opens a dialogFragment to display offers
      *
@@ -608,11 +613,24 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
      * @param text  Summary of dialog (pass null to hide summary)
      * @param url   ArrayList containing URLs of images (pass null to hide images)
      */
-    private void showPopupDialog(String title, String text, ArrayList<String> url) {
+    private void handleBeaconData(String title, String text, ArrayList<String> url) {
 
-        if(switchCompat.isChecked()){
+        databaseHandler = new DatabaseHandler(this);
 
-        }else{
+        Log.e("Beacon",": "+title+" : "+text);
+        String bstatus = "Exited";
+        Date curDate = new Date();
+        SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
+        String  bEntryDate = format.format(curDate);
+
+        if(switchCompat.isChecked()){//switch ON
+
+            isInserted = databaseHandler.addFenceTiming(new FenceTiming(title, bstatus, bEntryDate));
+            if (isInserted) {
+                Log.e("GeofenceonsIS : ", "inserted to local fence db");
+            }
+
+        }else{//Switch off
 
 
         }
@@ -665,7 +683,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 switch (action.getType()) {
                     case MSActionTypePopup:
                         if (!isPopupVisible) {
-                            showPopupDialog(ruleName, (String) messageMap.get("text"), null);
+                            handleBeaconData(ruleName, (String) messageMap.get("text"), null);
                         }
                         break;
 
@@ -686,7 +704,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                                         src = m.getMediaUrl().toString();
                                         urls.add(src);
                                     }
-                                    showPopupDialog(title, null, urls);
+                                    handleBeaconData(title, null, urls);
                                     break;
                                 case MSCardTypeSummary:
                                     ArrayList<String> cardUrls = new ArrayList<>();
@@ -695,7 +713,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                                         src = m.getMediaUrl().toString();
                                         cardUrls.add(src);
                                     }
-                                    showPopupDialog(card.getTitle(), card.getBody(), cardUrls);
+                                    handleBeaconData(card.getTitle(), card.getBody(), cardUrls);
                                     break;
                                 case MSCardTypeMedia:
                                     m = card.getMediaArray().get(0);
@@ -769,5 +787,33 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 }
             }
         }
+    }
+
+    /*
+    * This method will insert value to local fence table and fusion fence table
+    * Not inserting any value to BCP_MAPS(lat/long) table
+    * */
+    public void insertToDB() {
+
+        /*File file = credentials.saveFile(latitude, longitude,getApplicationContext());
+        new UploadToFTAsync(UploadToFTAsync.uploadFile, file, getApplicationContext()).execute();
+
+        //insert lat/long as address in local db
+        Date curDate = new Date();
+        SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
+        locEntryDate = format.format(curDate);
+        boolean isInserted;
+
+        databaseHandler = new DatabaseHandler(this);
+        String addToInsert = getAddress(latitude,longitude);
+        isInserted = databaseHandler.addLocation(new LocationData(addToInsert, locEntryDate));
+        if (isInserted) {
+            Log.e("Location : ", "inserted to local db" );
+            Log.e("Location : ",addToInsert +" "+locEntryDate);
+        }*/
+
+        //insert to local db
+
+
     }
 }
