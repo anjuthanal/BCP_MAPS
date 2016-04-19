@@ -6,6 +6,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Window;
 
 import com.bcp.bcp.R;
 import com.bcp.bcp.database.DatabaseHandler;
@@ -40,7 +41,7 @@ public class ViewLocationActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_view_location);
         samplelocFenDetailses = new ArrayList<>();
 

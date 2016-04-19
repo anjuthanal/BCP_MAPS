@@ -17,9 +17,11 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
@@ -72,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     GPSTracker gps;
     Credentials credentials;
     private SharedPreferences.Editor mEditor;
+    CardView cardView;
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private static final String TAG = "MainActivity";
@@ -89,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
         switchCompat = (SwitchCompat) findViewById(R.id.Switch);
 
@@ -96,8 +100,19 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         gps = new GPSTracker(MainActivity.this);
         SharedPreferences mSharedPreferences = getSharedPreferences("Shared", Context.MODE_PRIVATE);
         mEditor = mSharedPreferences.edit();
-
         gps = new GPSTracker(this);
+
+
+        cardView = (CardView)findViewById(R.id.carddb);
+
+        cardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, ViewLocationActivity.class);
+                startActivity(intent);
+
+            }
+        });
 
         if (gps.canGetLocation()) {
             latitude = gps.getLatitude();
@@ -141,28 +156,25 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             longitude = location.getLongitude();
         }
 
-       /* MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);*/
 
         switchCompat.setOnCheckedChangeListener(this);
 
-        mRegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);
+      //  mRegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);
         mRegistrationBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                mRegistrationProgressBar.setVisibility(ProgressBar.GONE);
+//                mRegistrationProgressBar.setVisibility(ProgressBar.GONE);
                 SharedPreferences sharedPreferences =
                         PreferenceManager.getDefaultSharedPreferences(context);
                 boolean sentToken = sharedPreferences
                         .getBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false);
                 if (sentToken) {
-                    mInformationTextView.setText(getString(R.string.gcm_send_message));
+//                    mInformationTextView.setText(getString(R.string.gcm_send_message));
                 } else {
-                    mInformationTextView.setText(getString(R.string.token_error_message));
+  //                  mInformationTextView.setText(getString(R.string.token_error_message));
                 }
             }
         };
-        mInformationTextView = (TextView) findViewById(R.id.informationTextView);
 
         // Registering BroadcastReceiver
         registerReceiver();
@@ -174,16 +186,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         }
 
 
-        imageButton = (ImageButton) findViewById(R.id.imageButton);
-        databaseHandler = new DatabaseHandler(this);
-        imageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
 
-                Intent intent = new Intent(MainActivity.this, ViewLocationActivity.class);
-                startActivity(intent);
-            }
-        });
 
         populateGeofenceList();
 
