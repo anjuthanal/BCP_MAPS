@@ -1,13 +1,17 @@
 package com.bcp.bcp.recyclerview;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
+import android.widget.ImageView;
 
+import com.bcp.bcp.MainActivity;
 import com.bcp.bcp.R;
 import com.bcp.bcp.database.DatabaseHandler;
 import com.bcp.bcp.database.FenceTiming;
@@ -31,11 +35,11 @@ public class ViewLocationActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     List<FenceTiming> fenceTimingList = new ArrayList<FenceTiming>();
     List<LocationData> locationDataList = new ArrayList<LocationData>();
-    List<LocationFenceTrackDetails> locationFenceTrackDetailses = new ArrayList<LocationFenceTrackDetails>();
     List<LocationFenceTrackDetails> samplelocFenDetailses = new ArrayList<LocationFenceTrackDetails>();
     private LocationDetailsAdapter locationDetailsAdapter;
     DatabaseHandler databaseHandler;
     private SimpleDateFormat format;
+    ImageView backarrow;
 
 
     @Override
@@ -43,9 +47,11 @@ public class ViewLocationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_view_location);
+
         samplelocFenDetailses = new ArrayList<>();
 
         recyclerView = (RecyclerView) findViewById(R.id.loc_recycler_view);
+        backarrow = (ImageView)findViewById(R.id.backarrow);
 
         locationDetailsAdapter = new LocationDetailsAdapter(samplelocFenDetailses);//pass new list combination of location and fence
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
@@ -55,6 +61,15 @@ public class ViewLocationActivity extends AppCompatActivity {
         format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
 
         prepareFenceDetailsOBject();
+
+
+        backarrow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ViewLocationActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     class CallsComp implements Comparator<LocationFenceTrackDetails> {
@@ -65,7 +80,7 @@ public class ViewLocationActivity extends AppCompatActivity {
                 Date lhsDate = format.parse(lhs.getTime());
                 Date rhsDate = format.parse(rhs.getTime());
                 return lhsDate.compareTo(rhsDate);
-            } catch (ParseException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return 0;

@@ -4,11 +4,47 @@
     android:layout_height="match_parent"
     android:background="@color/colorBackground"
     >
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/headerlayout"
+        android:layout_alignParentTop="true">
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:id="@+id/backarrow"
+            android:layout_marginTop="15dp"
+            android:layout_marginLeft="10dp"
+            android:src="@drawable/backarrow"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Geofence History"
+            android:textColor="@color/colorWhite"
+            android:textSize="20dp"
+            android:id="@+id/label"
+            android:layout_marginTop="15dp"
+            android:layout_centerHorizontal="true"
+            />
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:id="@+id/info"
+            android:layout_toRightOf="@+id/label"
+            android:layout_marginLeft="70dp"
+            android:layout_marginTop="15dp"
+            android:src="@drawable/info"/>
+
+    </RelativeLayout>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/loc_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:layout_below="@+id/headerlayout"
         android:scrollbars="vertical" />
 
 </RelativeLayout>

@@ -9,7 +9,7 @@ public class LocationFenceTrackDetails {
     private String status;
     private String time;
 
-   LocationFenceTrackDetails(){}
+   public LocationFenceTrackDetails(){}
 
     LocationFenceTrackDetails(String address, String status, String time){
         this.address = address;

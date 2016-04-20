@@ -46,6 +46,7 @@ import com.bcp.bcp.gcm.RegistrationIntentService;
 import com.bcp.bcp.geofencing.Constants;
 import com.bcp.bcp.geofencing.GeofenceErrorMessages;
 import com.bcp.bcp.geofencing.GeofenceTransitionsIntentService;
+import com.bcp.bcp.recyclerview.LocationFenceTrackDetails;
 import com.bcp.bcp.recyclerview.ViewLocationActivity;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -70,10 +71,16 @@ import com.mobstac.beaconstac.utils.MSException;
 import com.mobstac.beaconstac.utils.MSLogger;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -81,7 +88,7 @@ import java.util.regex.Pattern;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
-public class MainActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, OnMapReadyCallback, LocationListener,
+public class MainActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, LocationListener,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status>, BeaconstacReceiver.OnRuleTriggered {
     private SwitchCompat switchCompat;
     private GoogleMap gmap;
@@ -94,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     double longitude;
     long millisValue;
 
-    TextView timeText;
+    TextView timeText, textadd, textadd2, texttime, texttime2, nodata;
     GPSTracker gps;
     Credentials credentials;
     private SharedPreferences.Editor mEditor;
@@ -115,6 +122,14 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     private BeaconstacReceiver receiver;
     private Beaconstac bstac;
 
+    List<FenceTiming> fenceTimingList = new ArrayList<FenceTiming>();
+    List<LocationData> locationDataList = new ArrayList<LocationData>();
+    List<LocationFenceTrackDetails> samplelocFenDetailses = new ArrayList<LocationFenceTrackDetails>();
+
+
+    private SimpleDateFormat format;
+    LocationFenceTrackDetails trackDetails;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -131,14 +146,38 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
         cardView = (CardView) findViewById(R.id.carddb);
 
-        cardView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, ViewLocationActivity.class);
-                startActivity(intent);
 
+        textadd = (TextView) findViewById(R.id.textaddress);
+        textadd2 = (TextView) findViewById(R.id.textaddress2);
+        texttime = (TextView) findViewById(R.id.texttime);
+        texttime2 = (TextView) findViewById(R.id.texttime2);
+        nodata = (TextView) findViewById(R.id.nodata);
+
+        samplelocFenDetailses = prepareCardDetails();
+        if (samplelocFenDetailses != null && samplelocFenDetailses.size() > 0) {
+            textadd.setText(samplelocFenDetailses.get(0).getAddress());
+            texttime.setText(samplelocFenDetailses.get(0).getTime());
+            if (samplelocFenDetailses.size() > 1) {
+                textadd2.setText(samplelocFenDetailses.get(1).getAddress());
+                texttime2.setText(samplelocFenDetailses.get(1).getTime());
             }
-        });
+
+            cardView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(MainActivity.this, ViewLocationActivity.class);
+                    startActivity(intent);
+
+                }
+            });
+        } else {
+
+            nodata.setVisibility(View.VISIBLE);
+            textadd.setVisibility(View.INVISIBLE);
+            textadd2.setVisibility(View.INVISIBLE);
+            texttime.setVisibility(View.INVISIBLE);
+            texttime2.setVisibility(View.INVISIBLE);
+        }
 
         if (gps.canGetLocation()) {
             latitude = gps.getLatitude();
@@ -321,21 +360,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 }
                 break;
         }
-    }
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        gmap = googleMap;
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-
-        if (location != null) {
-            onLocationChanged(location);
-        }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, this);
-
     }
 
 
@@ -605,7 +629,9 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_EXITED_REGION);
         registerReceiver(receiver, intentFilter);
     }
+
     boolean isInserted;
+
     /**
      * Opens a dialogFragment to display offers
      *
@@ -617,32 +643,45 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
         databaseHandler = new DatabaseHandler(this);
 
-        Log.e("Beacon",": "+title+" : "+text);
+        Log.e("Beacon", ": " + title + " : " + text);
         String bstatus = "Exited";
         Date curDate = new Date();
         SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
-        String  bEntryDate = format.format(curDate);
+        String bEntryDate = format.format(curDate);
 
-        if(switchCompat.isChecked()){//switch ON
+        if (switchCompat.isChecked()) {//switch ON
 
             isInserted = databaseHandler.addFenceTiming(new FenceTiming(title, bstatus, bEntryDate));
             if (isInserted) {
                 Log.e("GeofenceonsIS : ", "inserted to local fence db");
             }
 
-        }else{//Switch off
+            //insert into fence fusion table anju
+
+        } else {//Switch off
 
 
         }
+    }
 
-        if (!isPopupVisible) {
-           /* FragmentManager fragmentManager = getSupportFragmentManager();
-            ImageCarouselDialog imageCarouselDialog = ImageCarouselDialog.newInstance(title, text, url);
-            imageCarouselDialog.setRetainInstance(true);*/
-            isPopupVisible = true;
+    public File saveGeoFile(String address, String status, String date, String mail, String geofile) {
 
-//            imageCarouselDialog.show(fragmentManager, "Dialog Fragment");
+        String textToSave = address + "," + status + "," + date + "," + mail;
+        File myFile = null;
+        try {
+            myFile = new File("/sdcard/" + geofile);
+            myFile.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(myFile);
+            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+            myOutWriter.append(textToSave);
+            myOutWriter.close();
+            fOut.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        Log.e("saveGeoFile ", textToSave);
+
+        return myFile;
     }
 
     public void setIsPopupVisible(boolean isPopupVisible) {
@@ -789,31 +828,70 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         }
     }
 
-    /*
-    * This method will insert value to local fence table and fusion fence table
-    * Not inserting any value to BCP_MAPS(lat/long) table
-    * */
-    public void insertToDB() {
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopScanning();
+    }
 
-        /*File file = credentials.saveFile(latitude, longitude,getApplicationContext());
-        new UploadToFTAsync(UploadToFTAsync.uploadFile, file, getApplicationContext()).execute();
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            if (receiver != null) unregisterReceiver(receiver);
+            if (placeSyncReceiver != null) unregisterReceiver(placeSyncReceiver);
+        } catch (IllegalArgumentException e) {
+            /**
+             * If receivers are not registered
+             */
+        }
+        stopScanning();
+    }
 
-        //insert lat/long as address in local db
-        Date curDate = new Date();
-        SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
-        locEntryDate = format.format(curDate);
-        boolean isInserted;
+
+    class CallsComp implements Comparator<LocationFenceTrackDetails> {
+
+        @Override
+        public int compare(LocationFenceTrackDetails lhs, LocationFenceTrackDetails rhs) {
+            try {
+                Date lhsDate = format.parse(lhs.getTime());
+                Date rhsDate = format.parse(rhs.getTime());
+                return lhsDate.compareTo(rhsDate);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return 0;
+        }
+    }
+
+
+    private List<LocationFenceTrackDetails> prepareCardDetails() {
 
         databaseHandler = new DatabaseHandler(this);
-        String addToInsert = getAddress(latitude,longitude);
-        isInserted = databaseHandler.addLocation(new LocationData(addToInsert, locEntryDate));
-        if (isInserted) {
-            Log.e("Location : ", "inserted to local db" );
-            Log.e("Location : ",addToInsert +" "+locEntryDate);
-        }*/
+        fenceTimingList.addAll(databaseHandler.getAllFenceTiming());
+        locationDataList.addAll(databaseHandler.getAllLocationData());
 
-        //insert to local db
+        if (fenceTimingList != null || locationDataList != null) {
+            for (FenceTiming fenceTiming : fenceTimingList) {
+                trackDetails = new LocationFenceTrackDetails();
+                trackDetails.setAddress(fenceTiming.getFenceAddress());
+                trackDetails.setStatus(fenceTiming.getStatus());
+                trackDetails.setTime(fenceTiming.getDatetime());
+                samplelocFenDetailses.add(trackDetails);
+            }
+            for (LocationData locationData : locationDataList) {
+                trackDetails = new LocationFenceTrackDetails();
+                trackDetails.setAddress(locationData.getLocAddress());
+                trackDetails.setStatus("");
+                trackDetails.setTime(locationData.getLocDatetime());
+                samplelocFenDetailses.add(trackDetails);
+            }
+            Log.e("samplelocFenDetailses   :   ", samplelocFenDetailses.size() + "");
+            if (samplelocFenDetailses != null) {
+                Collections.sort(samplelocFenDetailses, new CallsComp());
+            }
+        }
 
-
+        return samplelocFenDetailses;
     }
 }
