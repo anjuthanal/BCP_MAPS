@@ -189,6 +189,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
         }
         timeText = (TextView) findViewById(R.id.timeText);
+     //   String timeInterval = mSharedPreferences.getString("Time_Interval", "120000");//24 hrs/1 day by default
         String timeInterval = mSharedPreferences.getString("Time_Interval", "86399999");//24 hrs/1 day by default
         millisValue = Long.parseLong(timeInterval);
         timeValue = convert(millisValue);

@@ -197,12 +197,20 @@ public class GeofenceTransitionsIntentService extends IntentService {
                 }
 
 
-            } else {//Switch : OFF
+            } else {
             }
 
         } else if(geofenceTransitionString.equalsIgnoreCase("Entered")){//status :Entry
-            if (!mPref.getBoolean(geoFenceDetailString, false)) {
-                credentials.insertIntoGeoFusionTables(this.saveGeoFile(gaddress, gstatus, gEntryDate, gemail, "geofile"));
+
+            if (mPref.getBoolean("SWITCH", false)) {
+
+                if (!mPref.getBoolean(geoFenceDetailString, false)) {
+                    credentials.insertIntoGeoFusionTables(this.saveGeoFile(gaddress, gstatus, gEntryDate, gemail, "geofile"));
+                }
+
+            }else{//Switch : OFF
+
+
             }
         }
 

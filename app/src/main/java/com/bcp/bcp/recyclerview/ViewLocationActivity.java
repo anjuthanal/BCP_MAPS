@@ -38,11 +38,12 @@ public class ViewLocationActivity extends AppCompatActivity {
     List<FenceTiming> fenceTimingList = new ArrayList<FenceTiming>();
     List<LocationData> locationDataList = new ArrayList<LocationData>();
     List<LocationFenceTrackDetails> samplelocFenDetailses = new ArrayList<LocationFenceTrackDetails>();
+    List<LocationFenceTrackDetails> diplayList = new ArrayList<LocationFenceTrackDetails>();
     private LocationDetailsAdapter locationDetailsAdapter;
     DatabaseHandler databaseHandler;
     private SimpleDateFormat format;
     ImageView backarrow,infobtton;
-
+    static final long DAY = 24 * 60 * 60 * 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +57,7 @@ public class ViewLocationActivity extends AppCompatActivity {
         backarrow = (ImageView)findViewById(R.id.backarrow);
         infobtton = (ImageView)findViewById(R.id.info);
 
-        locationDetailsAdapter = new LocationDetailsAdapter(samplelocFenDetailses);//pass new list combination of location and fence
+        locationDetailsAdapter = new LocationDetailsAdapter(diplayList);//pass new list combination of location and fence
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -140,12 +141,37 @@ public class ViewLocationActivity extends AppCompatActivity {
                 samplelocFenDetailses.add(trackDetails);
             }
             Collections.sort(samplelocFenDetailses, new CallsComp());
+            getDataToDisplay(samplelocFenDetailses);
         }
-
 
         locationDetailsAdapter.notifyDataSetChanged();
     }
 
+
+
+    public List<LocationFenceTrackDetails> getDataToDisplay(List<LocationFenceTrackDetails> samplelocFenDetailses){
+
+
+        for(LocationFenceTrackDetails fenceTrackDetails :samplelocFenDetailses)
+        {
+            try {
+                Date dateFromDb = format.parse(fenceTrackDetails.getTime());
+                long dbmilli = dateFromDb.getTime();
+                long cyurrDatemilli = new Date().getTime();
+                if(dbmilli > cyurrDatemilli -DAY){
+
+                    diplayList.add(fenceTrackDetails);
+                }else{
+
+                }
+
+            }catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return  diplayList;
+    }
     private void prepareListView() {
 
         databaseHandler = new DatabaseHandler(this);
