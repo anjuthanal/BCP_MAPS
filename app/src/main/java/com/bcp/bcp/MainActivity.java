@@ -129,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     private SimpleDateFormat format;
     LocationFenceTrackDetails trackDetails;
+    private SharedPreferences mSharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
 
         gps = new GPSTracker(MainActivity.this);
-        SharedPreferences mSharedPreferences = getSharedPreferences("Shared", Context.MODE_PRIVATE);
+        mSharedPreferences = getSharedPreferences("Shared", Context.MODE_PRIVATE);
         mEditor = mSharedPreferences.edit();
         gps = new GPSTracker(this);
 
@@ -191,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         String timeInterval = mSharedPreferences.getString("Time_Interval", "86399999");//24 hrs/1 day by default
         millisValue = Long.parseLong(timeInterval);
         timeValue = convert(millisValue);
-        timeText.setText("Time Interval : " + timeValue);
+        timeText.setText("Refresh Time Interval : " + timeValue);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -640,28 +641,44 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
      * @param url   ArrayList containing URLs of images (pass null to hide images)
      */
     private void handleBeaconData(String title, String text, ArrayList<String> url) {
-
         databaseHandler = new DatabaseHandler(this);
+        String bstatus = "";
+        bstatus = "Entered: " + title + ", " + text + " BEACON STATUS";
 
-        Log.e("Beacon", ": " + title + " : " + text);
-        String bstatus = "Exited";
+        Log.e("Beacon", ": " + bstatus);
         Date curDate = new Date();
         SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
         String bEntryDate = format.format(curDate);
 
-        if (switchCompat.isChecked()) {//switch ON
 
+        isInserted = databaseHandler.addFenceTiming(new FenceTiming(title + "(B)", bstatus, bEntryDate));
+        if (isInserted) {
+            Log.e("GeofenceonsIS : ", "inserted to local fence db");
+        }
+
+        String [] geoFenceState = bstatus.split(": ");
+        if (geoFenceState[0].contains("Entered")) {
+            mEditor.putBoolean("Exited" + ": " + geoFenceState[1] + " BEACON STATUS", false);
+            mEditor.putBoolean(bstatus, true);
+            mEditor.apply();
+        }
+
+        if (geoFenceState[0].contains("Exited")) {
+            mEditor.putBoolean("Entered" + ": " + geoFenceState[1] + " BEACON STATUS", false);
+            mEditor.putBoolean(bstatus, true);
+            mEditor.apply();
+        }
+
+        /*if (switchCompat.isChecked()) {//switch ON
             isInserted = databaseHandler.addFenceTiming(new FenceTiming(title, bstatus, bEntryDate));
             if (isInserted) {
                 Log.e("GeofenceonsIS : ", "inserted to local fence db");
             }
-
             //insert into fence fusion table anju
-
         } else {//Switch off
 
 
-        }
+        }*/
     }
 
     public File saveGeoFile(String address, String status, String date, String mail, String geofile) {

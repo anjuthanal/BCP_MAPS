@@ -46,12 +46,12 @@ public class LocationDetailsAdapter extends RecyclerView.Adapter<LocationDetails
         LocationFenceTrackDetails locationFenceTrackDetailsObj = locationFenceTrackDetails.get(position);
         String address = locationFenceTrackDetailsObj.getAddress();
         String addrTodisplay = address.replace(",","\n");
-        if(locationFenceTrackDetailsObj.getStatus().equalsIgnoreCase("Exited"))
+        if(locationFenceTrackDetailsObj.getStatus().contains("Exited"))
         {
             holder.address.setTextColor(Color.parseColor("#6699ff"));
             holder.address.setText(locationFenceTrackDetailsObj.getAddress());
 
-        }else if(locationFenceTrackDetailsObj.getStatus().equalsIgnoreCase("Entered")){
+        }else if(locationFenceTrackDetailsObj.getStatus().contains("Entered")){
             holder.address.setTextColor(Color.parseColor("#ffff00"));
             holder.address.setText(locationFenceTrackDetailsObj.getAddress());
         }else{

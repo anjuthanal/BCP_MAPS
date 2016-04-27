@@ -167,7 +167,7 @@
                 android:layout_toEndOf="@+id/calenadarView"
 
                 android:layout_toRightOf="@+id/calenadarView"
-                android:text="Time Interval : "
+                android:text="Refresh Time Interval : "
                 android:textColor="@color/colorWhite" />
 
         </RelativeLayout>

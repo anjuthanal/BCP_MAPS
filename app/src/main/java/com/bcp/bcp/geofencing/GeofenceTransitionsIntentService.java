@@ -166,6 +166,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
         gaddress = triggeringGeofencesIdsList.toString();
         gstatus = geofenceTransitionString;
+        String geoFenceDetailString = geofenceTransitionString + ": " + triggeringGeofencesIdsString;
 
         Pattern gmailPattern = Patterns.EMAIL_ADDRESS;
         Account[] accounts = AccountManager.get(this).getAccounts();
@@ -182,7 +183,8 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
         //status:exit
         if (geofenceTransitionString.equalsIgnoreCase("Exited")) {
-            if (mPref.getBoolean("SWITCH", false)) {//Switch : ON
+            if (mPref.getBoolean("SWITCH", false)) {
+              //Switch : ON
                 //if switch is ON
                 String timeValue = mPref.getString("Time_Interval", "60000");
                 long configurableTime = Long.parseLong(timeValue);
@@ -190,30 +192,21 @@ public class GeofenceTransitionsIntentService extends IntentService {
                 mEditor.commit();
                 Intent intent = new Intent(this, MyLocationService.class);
                 startService(intent);
+                if (!mPref.getBoolean(geoFenceDetailString, false)) {
+                    credentials.insertIntoGeoFusionTables(this.saveGeoFile(gaddress, gstatus, gEntryDate, gemail, "geofile"));
+                }
 
-                credentials.insertIntoGeoFusionTables(this.saveGeoFile(gaddress, gstatus, gEntryDate, gemail, "geofile"));
 
             } else {//Switch : OFF
             }
 
         } else if(geofenceTransitionString.equalsIgnoreCase("Entered")){//status :Entry
-            credentials.insertIntoGeoFusionTables(this.saveGeoFile(gaddress, gstatus, gEntryDate, gemail, "geofile"));
-            /*if (mPref.getBoolean("SWITCH", false)) {//Switch : ON
-                //if switch is ON
-                String timeValue = mPref.getString("Time_Interval", "60000");
-                long configurableTime = Long.parseLong(timeValue);
-                mEditor.putLong("CONFIG TIME", configurableTime);
-                mEditor.commit();
-                Intent intent = new Intent(this, MyLocationService.class);
-                startService(intent);
-
+            if (!mPref.getBoolean(geoFenceDetailString, false)) {
                 credentials.insertIntoGeoFusionTables(this.saveGeoFile(gaddress, gstatus, gEntryDate, gemail, "geofile"));
-
-            } else {//Switch : OFF
-            }*/
+            }
         }
 
-        String geoFenceDetailString = geofenceTransitionString + ": " + triggeringGeofencesIdsString;
+
 
         if (!mPref.getBoolean(geoFenceDetailString, false)) {
             isInserted = databaseHandler.addFenceTiming(new FenceTiming(triggeringGeofencesIdsList.toString(), geofenceTransitionString, gEntryDate));

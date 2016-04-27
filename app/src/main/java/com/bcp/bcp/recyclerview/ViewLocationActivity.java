@@ -1,5 +1,7 @@
 package com.bcp.bcp.recyclerview;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -39,7 +41,7 @@ public class ViewLocationActivity extends AppCompatActivity {
     private LocationDetailsAdapter locationDetailsAdapter;
     DatabaseHandler databaseHandler;
     private SimpleDateFormat format;
-    ImageView backarrow;
+    ImageView backarrow,infobtton;
 
 
     @Override
@@ -52,6 +54,7 @@ public class ViewLocationActivity extends AppCompatActivity {
 
         recyclerView = (RecyclerView) findViewById(R.id.loc_recycler_view);
         backarrow = (ImageView)findViewById(R.id.backarrow);
+        infobtton = (ImageView)findViewById(R.id.info);
 
         locationDetailsAdapter = new LocationDetailsAdapter(samplelocFenDetailses);//pass new list combination of location and fence
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
@@ -70,7 +73,34 @@ public class ViewLocationActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+
+        infobtton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(ViewLocationActivity.this);
+
+                builder.setMessage("Label in Yellow colour shows Entry \n Lablel in blue shows Exits \n Lable with (B) indicates that data from beacons" +
+                        "\n White colour label indicate out of office tracking details")
+                        .setCancelable(false)
+                        .setNegativeButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                //  Action for 'NO' Button
+                                dialog.cancel();
+                            }
+                        });
+
+                //Creating dialog box
+                AlertDialog alert = builder.create();
+                //Setting the title manually
+                alert.setTitle("Colour Scheme");
+                alert.show();
+            }
+        });
     }
+
 
     class CallsComp implements Comparator<LocationFenceTrackDetails> {
 
