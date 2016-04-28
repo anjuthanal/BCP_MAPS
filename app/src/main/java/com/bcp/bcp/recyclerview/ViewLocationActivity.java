@@ -169,7 +169,7 @@ public class ViewLocationActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-
+        Collections.reverse(diplayList);
         return  diplayList;
     }
     private void prepareListView() {

@@ -129,12 +129,15 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     List<FenceTiming> fenceTimingList = new ArrayList<FenceTiming>();
     List<LocationData> locationDataList = new ArrayList<LocationData>();
     List<LocationFenceTrackDetails> samplelocFenDetailses = new ArrayList<LocationFenceTrackDetails>();
-
+    List<LocationFenceTrackDetails> locFenDetailsesforDisplay = new ArrayList<LocationFenceTrackDetails>();
 
     private SimpleDateFormat format;
     LocationFenceTrackDetails trackDetails;
     private SharedPreferences mSharedPreferences;
 
+
+    static final long DAY = 24 * 60 * 60 * 1000;
+    List<LocationFenceTrackDetails> diplayList = new ArrayList<LocationFenceTrackDetails>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -918,6 +921,32 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             return 0;
         }
     }
+    public List<LocationFenceTrackDetails> getDataToDisplay(List<LocationFenceTrackDetails> samplelocFenDetailses){
+        diplayList = new ArrayList<>();
+        long dbmilli=0;
+        long cyurrDatemilli=0;
+        for(LocationFenceTrackDetails fenceTrackDetails :samplelocFenDetailses)
+        {
+            try {
+                Date dateFromDb = format.parse(fenceTrackDetails.getTime());
+                 dbmilli = dateFromDb.getTime();
+                 cyurrDatemilli = new Date().getTime();
+                if(dbmilli > cyurrDatemilli -DAY){
+
+                    diplayList.add(fenceTrackDetails);
+                }else{
+
+                }
+
+            }catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        Collections.reverse(diplayList);
+        Log.e("dbmilli", ":" + ":" + dbmilli);
+        Log.e("cyurrDatemilli" ,":"+cyurrDatemilli);
+        return  diplayList;
+    }
 
 
     private List<LocationFenceTrackDetails> prepareCardDetails() {
@@ -941,12 +970,14 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 trackDetails.setTime(locationData.getLocDatetime());
                 samplelocFenDetailses.add(trackDetails);
             }
-            Log.e("samplelocFenDetailses   :   ", samplelocFenDetailses.size() + "");
             if (samplelocFenDetailses != null) {
                 Collections.sort(samplelocFenDetailses, new CallsComp());
             }
         }
-
+        Log.e("samplelocFenDetailses size" ,":"+samplelocFenDetailses.size());
+        locFenDetailsesforDisplay = getDataToDisplay(samplelocFenDetailses);
+        Log.e("locFenDetailsesforDisplay size" ,":"+locFenDetailsesforDisplay.size());
+        Collections.reverse(samplelocFenDetailses);
         return samplelocFenDetailses;
     }
 }
