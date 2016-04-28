@@ -1,6 +1,8 @@
 package com.bcp.bcp;
 
 import android.Manifest;
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
@@ -17,6 +19,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -28,6 +31,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.view.Window;
 import android.webkit.WebView;
@@ -641,15 +645,19 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
      * @param text  Summary of dialog (pass null to hide summary)
      * @param url   ArrayList containing URLs of images (pass null to hide images)
      */
+    String [] geoFenceState;
+    String bstatus = "";
+    String btitle = "";
+    String bEntryDate="";
+    String gemail = "";
     private void handleBeaconData(String title, String text, ArrayList<String> url) {
         databaseHandler = new DatabaseHandler(this);
-        String bstatus = "";
         bstatus = "Entered: " + title + ", " + text + " BEACON STATUS";
-
+        btitle = title;
         Log.e("Beacon", ": " + bstatus);
         Date curDate = new Date();
         SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
-        String bEntryDate = format.format(curDate);
+         bEntryDate = format.format(curDate);
 
 
         isInserted = databaseHandler.addFenceTiming(new FenceTiming(title + "(B)", bstatus, bEntryDate));
@@ -657,7 +665,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             Log.e("GeofenceonsIS : ", "inserted to local fence db");
         }
 
-        String [] geoFenceState = bstatus.split(": ");
+        geoFenceState = bstatus.split(": ");
         if (geoFenceState[0].contains("Entered")) {
             mEditor.putBoolean("Exited" + ": " + geoFenceState[1] + " BEACON STATUS", false);
             mEditor.putBoolean(bstatus, true);
@@ -670,19 +678,34 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             mEditor.apply();
         }
 
-        /*if (switchCompat.isChecked()) {//switch ON
-            isInserted = databaseHandler.addFenceTiming(new FenceTiming(title, bstatus, bEntryDate));
-            if (isInserted) {
-                Log.e("GeofenceonsIS : ", "inserted to local fence db");
+
+        Pattern gmailPattern = Patterns.EMAIL_ADDRESS;
+        Account[] accounts = AccountManager.get(this).getAccounts();
+
+        for (Account account : accounts) {
+            if (gmailPattern.matcher(account.name).matches()) {
+                gemail = account.name;
             }
-            //insert into fence fusion table anju
-        } else {//Switch off
+        }
 
+        if (switchCompat.isChecked()){
+            InsertFutionTable asyncFT =new InsertFutionTable();
+            asyncFT.execute();
+        }else{
 
-        }*/
+        }
     }
 
-    public File saveGeoFile(String address, String status, String date, String mail, String geofile) {
+    class InsertFutionTable extends AsyncTask<Void,Void,Void>{
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            credentials.insertIntoGeoFusionTables(MainActivity.saveGeoFile(btitle, geoFenceState[0], bEntryDate, gemail, "geofile"));
+            return null;
+        }
+    }
+
+    public static File saveGeoFile(String address, String status, String date, String mail, String geofile) {
 
         String textToSave = address + "," + status + "," + date + "," + mail;
         File myFile = null;
