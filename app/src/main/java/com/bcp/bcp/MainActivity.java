@@ -921,10 +921,11 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             return 0;
         }
     }
+    long dbmilli=0;
+    long cyurrDatemilli=0;
     public List<LocationFenceTrackDetails> getDataToDisplay(List<LocationFenceTrackDetails> samplelocFenDetailses){
         diplayList = new ArrayList<>();
-        long dbmilli=0;
-        long cyurrDatemilli=0;
+
         for(LocationFenceTrackDetails fenceTrackDetails :samplelocFenDetailses)
         {
             try {
@@ -972,11 +973,12 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             }
             if (samplelocFenDetailses != null) {
                 Collections.sort(samplelocFenDetailses, new CallsComp());
+
             }
         }
-        Log.e("samplelocFenDetailses size" ,":"+samplelocFenDetailses.size());
+        //Log.e("samplelocFenDetailses size" ,":"+samplelocFenDetailses.size());
         locFenDetailsesforDisplay = getDataToDisplay(samplelocFenDetailses);
-        Log.e("locFenDetailsesforDisplay size" ,":"+locFenDetailsesforDisplay.size());
+       // Log.e("locFenDetailsesforDisplay size" ,":"+locFenDetailsesforDisplay.size());
         Collections.reverse(samplelocFenDetailses);
         return samplelocFenDetailses;
     }
