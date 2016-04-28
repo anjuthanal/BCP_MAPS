@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
         }
         timeText = (TextView) findViewById(R.id.timeText);
-     //   String timeInterval = mSharedPreferences.getString("Time_Interval", "120000");//24 hrs/1 day by default
+        //   String timeInterval = mSharedPreferences.getString("Time_Interval", "120000");//24 hrs/1 day by default
         String timeInterval = mSharedPreferences.getString("Time_Interval", "86399999");//24 hrs/1 day by default
         millisValue = Long.parseLong(timeInterval);
         timeValue = convert(millisValue);
@@ -645,35 +645,49 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
      * @param text  Summary of dialog (pass null to hide summary)
      * @param url   ArrayList containing URLs of images (pass null to hide images)
      */
-    String [] geoFenceState;
+    String[] geoFenceState;
     String bstatus = "";
     String btitle = "";
-    String bEntryDate="";
+    String bEntryDate = "";
     String gemail = "";
+
     private void handleBeaconData(String title, String text, ArrayList<String> url) {
         databaseHandler = new DatabaseHandler(this);
-        bstatus = "Entered: " + title + ", " + text + " BEACON STATUS";
+        String previousBeaconStatus = mSharedPreferences.getString("BEACON STATUS", "Exited: " + title + ", " + text);
+        if (previousBeaconStatus.contains("Entered")) {
+            mEditor.putString("BEACON STATUS", "Exited: " + title + ", " + text);
+            mEditor.apply();
+        }
+
+        if (previousBeaconStatus.contains("Exited")) {
+            mEditor.putString("BEACON STATUS", "Entered: " + title + ", " + text);
+            mEditor.apply();
+        }
+
+        bstatus = mSharedPreferences.getString("BEACON STATUS", "Entered: " + title + ", " + text);
         btitle = title;
         Log.e("Beacon", ": " + bstatus);
         Date curDate = new Date();
         SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
-         bEntryDate = format.format(curDate);
+        bEntryDate = format.format(curDate);
 
 
-        isInserted = databaseHandler.addFenceTiming(new FenceTiming(title + "(B)", bstatus, bEntryDate));
-        if (isInserted) {
-            Log.e("GeofenceonsIS : ", "inserted to local fence db");
+        if (!mSharedPreferences.getBoolean(bstatus, false)) {
+            isInserted = databaseHandler.addFenceTiming(new FenceTiming(title + "(B)", bstatus, bEntryDate));
+            if (isInserted) {
+                Log.e("GeofenceonsIS : ", "inserted to local fence db");
+            }
         }
 
         geoFenceState = bstatus.split(": ");
         if (geoFenceState[0].contains("Entered")) {
-            mEditor.putBoolean("Exited" + ": " + geoFenceState[1] + " BEACON STATUS", false);
+            mEditor.putBoolean("Exited" + ": " + geoFenceState[1], false);
             mEditor.putBoolean(bstatus, true);
             mEditor.apply();
         }
 
         if (geoFenceState[0].contains("Exited")) {
-            mEditor.putBoolean("Entered" + ": " + geoFenceState[1] + " BEACON STATUS", false);
+            mEditor.putBoolean("Entered" + ": " + geoFenceState[1], false);
             mEditor.putBoolean(bstatus, true);
             mEditor.apply();
         }
@@ -688,15 +702,15 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             }
         }
 
-        if (switchCompat.isChecked()){
-            InsertFutionTable asyncFT =new InsertFutionTable();
+        if (switchCompat.isChecked()) {
+            InsertFutionTable asyncFT = new InsertFutionTable();
             asyncFT.execute();
-        }else{
+        } else {
 
         }
     }
 
-    class InsertFutionTable extends AsyncTask<Void,Void,Void>{
+    class InsertFutionTable extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... params) {
