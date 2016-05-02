@@ -606,7 +606,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         bstac = Beaconstac.getInstance(this);
         bstac.setRegionParams("F94DBB23-2266-7822-3782-57BEAC0952AC", "com.bcp.bcp");
         bstac.syncRules();
-        bstac.setActiveScanDuration(8000);
+       // bstac.setActiveScanDuration(12000);
 
         LocationManager locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (locManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
