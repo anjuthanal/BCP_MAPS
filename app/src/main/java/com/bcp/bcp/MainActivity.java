@@ -606,7 +606,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         bstac = Beaconstac.getInstance(this);
         bstac.setRegionParams("F94DBB23-2266-7822-3782-57BEAC0952AC", "com.bcp.bcp");
         bstac.syncRules();
-
+        bstac.setActiveScanDuration(8000);
 
         LocationManager locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (locManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
@@ -889,21 +889,21 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     @Override
     protected void onPause() {
         super.onPause();
-        stopScanning();
+       // stopScanning();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        try {
+       /* try {
             if (receiver != null) unregisterReceiver(receiver);
             if (placeSyncReceiver != null) unregisterReceiver(placeSyncReceiver);
         } catch (IllegalArgumentException e) {
-            /**
+            *//**
              * If receivers are not registered
-             */
-        }
-        stopScanning();
+             *//*
+        }*/
+       // stopScanning();
     }
 
 
