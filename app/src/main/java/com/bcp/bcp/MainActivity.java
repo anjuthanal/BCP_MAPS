@@ -675,12 +675,12 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         bEntryDate = format.format(curDate);
 
 
-        if (!mSharedPreferences.getBoolean(bstatus, false)) {
+        //if (!mSharedPreferences.getBoolean(bstatus, false)) {
             isInserted = databaseHandler.addFenceTiming(new FenceTiming(title + "(B)", bstatus, bEntryDate));
             if (isInserted) {
                 Log.e("GeofenceonsIS : ", "inserted to local fence db");
             }
-        }
+       // }
 
         geoFenceState = bstatus.split(": ");
         if (geoFenceState[0].contains("Entered")) {
@@ -889,20 +889,19 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     @Override
     protected void onPause() {
         super.onPause();
+        getBluetoothAdapter();
        // stopScanning();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-       /* try {
+        try {
             if (receiver != null) unregisterReceiver(receiver);
             if (placeSyncReceiver != null) unregisterReceiver(placeSyncReceiver);
         } catch (IllegalArgumentException e) {
-            *//**
-             * If receivers are not registered
-             *//*
-        }*/
+
+        }
        // stopScanning();
     }
 
