@@ -7,9 +7,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.bcp.bcp.recyclerview.LocationFenceTrackDetails;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by anjup on 3/22/16.
@@ -161,6 +166,62 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         // return contact list
         return fenceTimingList;
+    }
+
+    public boolean  deletePastFenceTiming() {
+        boolean isDeleted = false;
+        SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss", Locale.getDefault());
+        List<FenceTiming> fenceTimingList = new ArrayList<FenceTiming>();
+        List<FenceTiming> fenceTimingListToDisplay = new ArrayList<FenceTiming>();
+        long dbmilli = 0;
+        long cyurrDatemilli = 0;
+        long DAY = 24 * 60 * 60 * 1000;
+
+        String selectQuery = "SELECT  * FROM " + TABLE_FENCETIMING;
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                FenceTiming fenceTiming = new FenceTiming();
+                fenceTiming.setId(Integer.parseInt(cursor.getString(0)));
+                fenceTiming.setFenceAddress(cursor.getString(1));
+                fenceTiming.setStatus(cursor.getString(2));
+                fenceTiming.setDatetime(cursor.getString(3));
+
+                // Adding contact to list
+                fenceTimingList.add(fenceTiming);
+            } while (cursor.moveToNext());
+        }
+        if(fenceTimingList != null && fenceTimingList.size() > 0){
+
+            Log.e("Before delete size : "," : "+fenceTimingList.size());
+
+            for (FenceTiming fenceTiming : fenceTimingList) {
+                try {
+                    Date dateFromDb = format.parse(fenceTiming.getDatetime());
+                    dbmilli = dateFromDb.getTime();
+                    cyurrDatemilli = new Date().getTime();
+                    if (dbmilli > cyurrDatemilli - DAY) {
+
+                        fenceTimingListToDisplay.add(fenceTiming);
+
+                    } else {
+
+                        sqLiteDatabase.delete(TABLE_FENCETIMING, KEY_TIMINGID + "=" + fenceTiming.getId(), null);
+                        isDeleted = true;
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        if(fenceTimingListToDisplay != null && fenceTimingListToDisplay.size() > 0){
+            Log.e("After delete size : "," : "+fenceTimingListToDisplay.size());
+        }
+        return isDeleted;
     }
 
     public FenceTiming getFenceTimingByAddress(String address) {
