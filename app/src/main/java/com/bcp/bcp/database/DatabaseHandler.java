@@ -122,6 +122,66 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     }
 
 
+
+    public boolean deletePastLocationData() {
+        boolean isDeleted = false;
+        List<LocationData> locationDataList = new ArrayList<LocationData>();
+        SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss", Locale.getDefault());
+        List<LocationData> locationDataToDisplay = new ArrayList<LocationData>();
+        long dbmilli = 0;
+        long cyurrDatemilli = 0;
+        long DAY = 24 * 60 * 60 * 1000;
+
+
+        String selectQuery = "SELECT  * FROM " + TABLE_LOCATION;
+
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                LocationData locationData = new LocationData();
+                locationData.setId(Integer.parseInt(cursor.getString(0)));
+                locationData.setLocAddress(cursor.getString(1));
+                locationData.setLocDatetime(cursor.getString(2));
+
+                // Adding contact to list
+                locationDataList.add(locationData);
+            } while (cursor.moveToNext());
+        }
+
+        if(locationDataList != null && locationDataList.size() > 0){
+
+            Log.e("Before delete size : "," : "+locationDataList.size());
+
+            for (LocationData locationData : locationDataList) {
+                try {
+                    Date dateFromDb = format.parse(locationData.getLocDatetime());
+                    dbmilli = dateFromDb.getTime();
+                    cyurrDatemilli = new Date().getTime();
+                    if (dbmilli > cyurrDatemilli - DAY) {
+
+                        locationDataToDisplay.add(locationData);
+
+                    } else {
+
+                        sqLiteDatabase.delete(TABLE_LOCATION, KEY_LOCATIONID + "=" + locationData.getId(), null);
+                        isDeleted = true;
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        if(locationDataToDisplay != null && locationDataToDisplay.size() > 0){
+            Log.e("After delete size : "," : "+locationDataToDisplay.size());
+        }
+        return isDeleted;
+    }
+
     public boolean addFenceTiming(FenceTiming fenceTiming) {
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
         boolean isInserted = false;
