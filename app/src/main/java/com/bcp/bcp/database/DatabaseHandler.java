@@ -5,8 +5,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -160,6 +162,38 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         // return contact list
         return fenceTimingList;
+    }
+
+    public FenceTiming getFenceTimingByAddress(String address){
+        FenceTiming fenceTimingToShow = new FenceTiming();
+        List<FenceTiming> fenceTimingList = new ArrayList<FenceTiming>();
+        String selectQuery = "SELECT  * FROM " + TABLE_FENCETIMING + " WHERE "
+                + KEY_FENCEADDRESS + " = '" + address + "'";
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                FenceTiming fenceTiming = new FenceTiming();
+                fenceTiming.setId(Integer.parseInt(cursor.getString(0)));
+                fenceTiming.setFenceAddress(cursor.getString(1));
+                fenceTiming.setStatus(cursor.getString(2));
+                fenceTiming.setDatetime(cursor.getString(3));
+
+                // Adding contact to list
+                fenceTimingList.add(fenceTiming);
+            } while (cursor.moveToNext());
+        }
+        if(fenceTimingList != null && fenceTimingList.size() >0){
+            Collections.reverse(fenceTimingList);
+
+            for(FenceTiming timing :fenceTimingList){
+                Log.e("Time of entry after reverse ",""+timing.getDatetime());
+            }
+            fenceTimingToShow = fenceTimingList.get(0);
+        }
+
+
+        return  fenceTimingToShow;
     }
 
     public void delete_byID(int id){
