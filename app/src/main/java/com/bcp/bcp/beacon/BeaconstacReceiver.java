@@ -1,10 +1,14 @@
 package com.bcp.bcp.beacon;
 
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.bcp.bcp.MainActivity;
+import com.bcp.bcp.R;
 import com.mobstac.beaconstac.core.MSPlace;
 import com.mobstac.beaconstac.models.MSAction;
 import com.mobstac.beaconstac.models.MSBeacon;
@@ -35,7 +39,7 @@ public class BeaconstacReceiver extends com.mobstac.beaconstac.core.BeaconstacRe
     @Override
     public void rangedBeacons(Context context, ArrayList<MSBeacon> beacons) {
         Log.v(BeaconstacReceiver.class.getName(), "Ranged called " + beacons.size());
-        sendNotification(context, "Ranged " + beacons.size() + " beacons");
+//        sendNotification(context, "Ranged " + beacons.size() + " beacons");
     }
 
     @Override
@@ -49,6 +53,7 @@ public class BeaconstacReceiver extends com.mobstac.beaconstac.core.BeaconstacRe
         if (listener != null) {
             Log.e(BeaconstacReceiver.class.getName(), "triggered rule called " + ruleName + " with " + actions.size() + " actions");
             listener.onTriggeredRule(context, ruleName, actions);
+//            sendNotification(context, ruleName);
         }
     }
 
@@ -89,7 +94,7 @@ public class BeaconstacReceiver extends com.mobstac.beaconstac.core.BeaconstacRe
 
     private void sendNotification(Context context, String text) {
         if (context != null) {
-            /*Intent activityIntent = new Intent(context.getApplicationContext(), ExhibitContentActivity.class);
+            Intent activityIntent = new Intent(context.getApplicationContext(), MainActivity.class);
             PendingIntent pendingIntent = PendingIntent.getActivity(
                     context.getApplicationContext(),
                     0,
@@ -98,13 +103,12 @@ public class BeaconstacReceiver extends com.mobstac.beaconstac.core.BeaconstacRe
             );
 
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context.getApplicationContext())
-                    .setContentText(text)
-                    .setContentTitle("BeaconstacDemo")
+                    .setContentTitle(text)
                     .setSmallIcon(R.mipmap.ic_launcher)
                     .setContentIntent(pendingIntent);
             notificationManager = (NotificationManager)
                     context.getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
-            notificationManager.notify(1, mBuilder.build());*/
+            notificationManager.notify(1, mBuilder.build());
         }
     }
 }

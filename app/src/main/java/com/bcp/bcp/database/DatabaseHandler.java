@@ -47,15 +47,15 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
 
         String CREATE_GEOFENCE_TABLE = "CREATE TABLE " + TABLE_GEOFENCE + "("
-                + KEY_ID + " INTEGER PRIMARY KEY, " + KEY_LAT + " TEXT, " + KEY_LNG + " TEXT,"+ KEY_RADIUS + " TEXT," + KEY_FENCE_NAME + " TEXT" + ")";
+                + KEY_ID + " INTEGER PRIMARY KEY, " + KEY_LAT + " TEXT, " + KEY_LNG + " TEXT," + KEY_RADIUS + " TEXT," + KEY_FENCE_NAME + " TEXT" + ")";
         db.execSQL(CREATE_GEOFENCE_TABLE);
 
         String CREATE_FENCETIMING_TABLE = "CREATE TABLE " + TABLE_FENCETIMING + "("
-                + KEY_TIMINGID + " INTEGER PRIMARY KEY, " + KEY_FENCEADDRESS + " TEXT,"+ KEY_STATUS + " TEXT," +KEY_DATETIME + " TEXT" + ")";
+                + KEY_TIMINGID + " INTEGER PRIMARY KEY, " + KEY_FENCEADDRESS + " TEXT," + KEY_STATUS + " TEXT," + KEY_DATETIME + " TEXT" + ")";
         db.execSQL(CREATE_FENCETIMING_TABLE);
 
         String CREATE_TABLE_LOCATION = "CREATE TABLE " + TABLE_LOCATION + "("
-                + KEY_LOCATIONID + " INTEGER PRIMARY KEY, " + KEY_LOCATIONADDRESS + " TEXT,"+KEY_LOCDATETIME + " TEXT" + ")";
+                + KEY_LOCATIONID + " INTEGER PRIMARY KEY, " + KEY_LOCATIONADDRESS + " TEXT," + KEY_LOCDATETIME + " TEXT" + ")";
         db.execSQL(CREATE_TABLE_LOCATION);
 
     }
@@ -72,7 +72,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     }
 
 
-    public boolean addLocation(LocationData locationData){
+    public boolean addLocation(LocationData locationData) {
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
         boolean isInserted = false;
 
@@ -80,7 +80,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_LOCATIONADDRESS, locationData.getLocAddress());
         values.put(KEY_LOCDATETIME, locationData.getLocDatetime());
 
-        if(values!=null) {
+        if (values != null) {
             // Inserting Row
             sqLiteDatabase.insert(TABLE_LOCATION, null, values);
             isInserted = true;
@@ -117,8 +117,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     }
 
 
-
-    public boolean addFenceTiming(FenceTiming fenceTiming){
+    public boolean addFenceTiming(FenceTiming fenceTiming) {
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
         boolean isInserted = false;
 
@@ -127,7 +126,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_STATUS, fenceTiming.getStatus());
         values.put(KEY_DATETIME, fenceTiming.getDatetime());
 
-        if(values!=null) {
+        if (values != null) {
             // Inserting Row
             sqLiteDatabase.insert(TABLE_FENCETIMING, null, values);
             isInserted = true;
@@ -164,7 +163,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return fenceTimingList;
     }
 
-    public FenceTiming getFenceTimingByAddress(String address){
+    public FenceTiming getFenceTimingByAddress(String address) {
         FenceTiming fenceTimingToShow = new FenceTiming();
         List<FenceTiming> fenceTimingList = new ArrayList<FenceTiming>();
         String selectQuery = "SELECT  * FROM " + TABLE_FENCETIMING + " WHERE "
@@ -183,25 +182,26 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 fenceTimingList.add(fenceTiming);
             } while (cursor.moveToNext());
         }
-        if(fenceTimingList != null && fenceTimingList.size() >0){
+        if (fenceTimingList != null && fenceTimingList.size() > 0) {
             Collections.reverse(fenceTimingList);
-
-            for(FenceTiming timing :fenceTimingList){
-                Log.e("Time of entry after reverse ",""+timing.getDatetime());
-            }
             fenceTimingToShow = fenceTimingList.get(0);
         }
-
-
-        return  fenceTimingToShow;
+        return fenceTimingToShow;
     }
 
-    public void delete_byID(int id){
+    public void updateFenceEntryStatus(String time, String status) {
+        String selectQuery = "UPDATE " + TABLE_FENCETIMING + " SET " + KEY_STATUS + " = '" + status + "' WHERE "
+                + KEY_DATETIME + " = '" + time + "'";
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
-        sqLiteDatabase.delete(TABLE_FENCETIMING, KEY_TIMINGID+"="+id, null);
+        sqLiteDatabase.execSQL(selectQuery);
     }
 
-    public boolean addFence(GeoFence geoFence){
+    public void delete_byID(int id) {
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        sqLiteDatabase.delete(TABLE_FENCETIMING, KEY_TIMINGID + "=" + id, null);
+    }
+
+    public boolean addFence(GeoFence geoFence) {
 
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
 
@@ -213,7 +213,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_RADIUS, geoFence.getRadius());
         values.put(KEY_FENCE_NAME, geoFence.getFenceName());
 
-        if(values!=null) {
+        if (values != null) {
             // Inserting Row
             sqLiteDatabase.insert(TABLE_GEOFENCE, null, values);
             isInserted = true;
@@ -224,7 +224,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return isInserted;
     }
 
-    public GeoFence getGeoFence(int id){
+    public GeoFence getGeoFence(int id) {
         SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
 
         Cursor cursor = sqLiteDatabase.query(TABLE_GEOFENCE, new String[]{KEY_ID, KEY_LAT, KEY_LNG, KEY_RADIUS, KEY_FENCE_NAME}, KEY_ID + "=?",
@@ -276,7 +276,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         // updating row
         return sqLiteDatabase.update(TABLE_GEOFENCE, values, KEY_ID + " = ?",
-                new String[] { String.valueOf(geoFence.getId()) });
+                new String[]{String.valueOf(geoFence.getId())});
     }
 
 

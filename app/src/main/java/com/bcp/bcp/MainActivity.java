@@ -25,11 +25,11 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.SwitchCompat;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
@@ -41,7 +41,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bcp.bcp.beacon.BeaconstacReceiver;
-import com.bcp.bcp.beacon.ImageCarouselDialog;
 import com.bcp.bcp.database.DatabaseHandler;
 import com.bcp.bcp.database.FenceTiming;
 import com.bcp.bcp.database.LocationData;
@@ -62,7 +61,6 @@ import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.mobstac.beaconstac.core.Beaconstac;
@@ -85,6 +83,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -138,6 +137,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     static final long DAY = 24 * 60 * 60 * 1000;
     List<LocationFenceTrackDetails> diplayList = new ArrayList<LocationFenceTrackDetails>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -282,23 +282,23 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                     // geofence.
                     .setRequestId(entry.getKey())
 
-                            // Set the circular region of this geofence.
+                    // Set the circular region of this geofence.
                     .setCircularRegion(
                             entry.getValue().latitude,
                             entry.getValue().longitude,
                             Constants.GEOFENCE_RADIUS_IN_METERS
                     )
 
-                            // Set the expiration duration of the geofence. This geofence gets automatically
-                            // removed after this period of time.
+                    // Set the expiration duration of the geofence. This geofence gets automatically
+                    // removed after this period of time.
                     .setExpirationDuration(Constants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
 
-                            // Set the transition types of interest. Alerts are only generated for these
-                            // transition. We track entry and exit transitions in this sample.
+                    // Set the transition types of interest. Alerts are only generated for these
+                    // transition. We track entry and exit transitions in this sample.
                     .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
                             Geofence.GEOFENCE_TRANSITION_EXIT)
 
-                            // Create the geofence.
+                    // Create the geofence.
                     .build());
         }
     }
@@ -606,7 +606,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         bstac = Beaconstac.getInstance(this);
         bstac.setRegionParams("F94DBB23-2266-7822-3782-57BEAC0952AC", "com.bcp.bcp");
         bstac.syncRules();
-       // bstac.setActiveScanDuration(12000);
+        // bstac.setActiveScanDuration(12000);
 
         LocationManager locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (locManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
@@ -656,60 +656,52 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     private void handleBeaconData(String title, String text, ArrayList<String> url) {
         databaseHandler = new DatabaseHandler(this);
-        String previousBeaconStatus = mSharedPreferences.getString("BEACON STATUS", "Exited: " + title + ", " + text);
-        if (previousBeaconStatus.contains("Entered")) {
-            mEditor.putString("BEACON STATUS", "Exited: " + title + ", " + text);
-            mEditor.apply();
+        FenceTiming previousFenceEntry = databaseHandler.getFenceTimingByAddress(title + ", " + text + "(B)");
+
+        Date currentEntryDate = new Date();
+        SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss", Locale.getDefault());
+        bEntryDate = format.format(currentEntryDate);
+        Date previousEntryDate = null;
+        long timeStampDifference = 0;
+
+        if (previousFenceEntry != null) {
+            try {
+                previousEntryDate = format.parse(TextUtils.isEmpty(previousFenceEntry.getDatetime()) ? "" : previousFenceEntry.getDatetime());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
 
-        if (previousBeaconStatus.contains("Exited")) {
-            mEditor.putString("BEACON STATUS", "Entered: " + title + ", " + text);
-            mEditor.apply();
+        if (previousEntryDate != null) {
+            timeStampDifference = currentEntryDate.getTime() - previousEntryDate.getTime();
         }
 
-        bstatus = mSharedPreferences.getString("BEACON STATUS", "Entered: " + title + ", " + text);
-        btitle = title;
-        Log.e("Beacon", ": " + bstatus);
-        Date curDate = new Date();
-        SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
-        bEntryDate = format.format(curDate);
+        if (timeStampDifference < Constants.TIMESTAMP_DIFF) {
+            bstatus = "Entered: " + title + ", " + text;
+            btitle = title;
 
-
-        //if (!mSharedPreferences.getBoolean(bstatus, false)) {
-            isInserted = databaseHandler.addFenceTiming(new FenceTiming(title + "(B)", bstatus, bEntryDate));
+            isInserted = databaseHandler.addFenceTiming(new FenceTiming(title + ", " + text + "(B)", bstatus, bEntryDate));
             if (isInserted) {
                 Log.e("GeofenceonsIS : ", "inserted to local fence db");
             }
-       // }
 
-        geoFenceState = bstatus.split(": ");
-        if (geoFenceState[0].contains("Entered")) {
-            mEditor.putBoolean("Exited" + ": " + geoFenceState[1], false);
-            mEditor.putBoolean(bstatus, true);
-            mEditor.apply();
-        }
+            Pattern gmailPattern = Patterns.EMAIL_ADDRESS;
+            Account[] accounts = AccountManager.get(this).getAccounts();
 
-        if (geoFenceState[0].contains("Exited")) {
-            mEditor.putBoolean("Entered" + ": " + geoFenceState[1], false);
-            mEditor.putBoolean(bstatus, true);
-            mEditor.apply();
-        }
-
-
-        Pattern gmailPattern = Patterns.EMAIL_ADDRESS;
-        Account[] accounts = AccountManager.get(this).getAccounts();
-
-        for (Account account : accounts) {
-            if (gmailPattern.matcher(account.name).matches()) {
-                gemail = account.name;
+            for (Account account : accounts) {
+                if (gmailPattern.matcher(account.name).matches()) {
+                    gemail = account.name;
+                }
             }
-        }
 
-        if (switchCompat.isChecked()) {
-            InsertFutionTable asyncFT = new InsertFutionTable();
-            asyncFT.execute();
+            if (switchCompat.isChecked()) {
+                InsertFutionTable asyncFT = new InsertFutionTable();
+                asyncFT.execute();
+            }
         } else {
-
+            Log.e(TAG, "handleBeaconData: " + bstatus);
+            bstatus = "Exited: " + title + ", " + text;
+            databaseHandler.updateFenceEntryStatus(previousFenceEntry.getDatetime(), bstatus);
         }
     }
 
@@ -890,7 +882,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     protected void onPause() {
         super.onPause();
         getBluetoothAdapter();
-       // stopScanning();
+        // stopScanning();
     }
 
     @Override
@@ -902,7 +894,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         } catch (IllegalArgumentException e) {
 
         }
-       // stopScanning();
+        // stopScanning();
     }
 
 
@@ -920,32 +912,33 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             return 0;
         }
     }
-    long dbmilli=0;
-    long cyurrDatemilli=0;
-    public List<LocationFenceTrackDetails> getDataToDisplay(List<LocationFenceTrackDetails> samplelocFenDetailses){
+
+    long dbmilli = 0;
+    long cyurrDatemilli = 0;
+
+    public List<LocationFenceTrackDetails> getDataToDisplay(List<LocationFenceTrackDetails> samplelocFenDetailses) {
         diplayList = new ArrayList<>();
 
-        for(LocationFenceTrackDetails fenceTrackDetails :samplelocFenDetailses)
-        {
+        for (LocationFenceTrackDetails fenceTrackDetails : samplelocFenDetailses) {
             try {
                 Date dateFromDb = format.parse(fenceTrackDetails.getTime());
-                 dbmilli = dateFromDb.getTime();
-                 cyurrDatemilli = new Date().getTime();
-                if(dbmilli > cyurrDatemilli -DAY){
+                dbmilli = dateFromDb.getTime();
+                cyurrDatemilli = new Date().getTime();
+                if (dbmilli > cyurrDatemilli - DAY) {
 
                     diplayList.add(fenceTrackDetails);
-                }else{
+                } else {
 
                 }
 
-            }catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         Collections.reverse(diplayList);
         Log.e("dbmilli", ":" + ":" + dbmilli);
-        Log.e("cyurrDatemilli" ,":"+cyurrDatemilli);
-        return  diplayList;
+        Log.e("cyurrDatemilli", ":" + cyurrDatemilli);
+        return diplayList;
     }
 
 
@@ -977,7 +970,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         }
         //Log.e("samplelocFenDetailses size" ,":"+samplelocFenDetailses.size());
         locFenDetailsesforDisplay = getDataToDisplay(samplelocFenDetailses);
-       // Log.e("locFenDetailsesforDisplay size" ,":"+locFenDetailsesforDisplay.size());
+        // Log.e("locFenDetailsesforDisplay size" ,":"+locFenDetailsesforDisplay.size());
         Collections.reverse(samplelocFenDetailses);
         return samplelocFenDetailses;
     }
