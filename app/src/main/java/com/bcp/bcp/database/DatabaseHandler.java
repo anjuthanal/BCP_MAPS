@@ -162,6 +162,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return fenceTimingList;
     }
 
+    public void delete_byID(int id){
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        sqLiteDatabase.delete(TABLE_FENCETIMING, KEY_TIMINGID+"="+id, null);
+    }
 
     public boolean addFence(GeoFence geoFence){
 
