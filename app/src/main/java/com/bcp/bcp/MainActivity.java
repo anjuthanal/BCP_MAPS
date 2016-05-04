@@ -4,6 +4,7 @@ import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
@@ -176,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 public void onClick(View v) {
                     Intent intent = new Intent(MainActivity.this, ViewLocationActivity.class);
                     startActivity(intent);
-
+                    finish();
                 }
             });
         } else {
@@ -270,25 +271,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         databaseHandler.deletePastFenceTiming();
         databaseHandler.deletePastLocationData();
 
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        if (mGoogleApiClient != null && !mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.connect();
-        }
-
-        if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
-            try {
-                if (receiver != null) unregisterReceiver(receiver);
-                if (placeSyncReceiver != null) unregisterReceiver(placeSyncReceiver);
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-            }
-            syncBeacon();
-        }
     }
 
     /**
@@ -640,7 +622,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             registerReceiver(placeSyncReceiver, intentFilter);
         } else {
             try {
-                bstac.syncBeacons();
                 bstac.startRangingBeacons();
             } catch (MSException e) {
                 e.printStackTrace();
@@ -780,20 +761,17 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     }
 
     public void stopScanning() {
-        /*
-        if (bstac != null) {
+        /*if (bstac != null) {
             try {
                 bstac.stopRangingBeacons();
             } catch (MSException e) {
                 e.printStackTrace();
             }
-        }
-        */
+        }*/
     }
 
     @Override
     public void onTriggeredRule(Context context, String ruleName, ArrayList<MSAction> actions) {
-
         {
             HashMap<String, Object> messageMap;
             for (MSAction action : actions) {
@@ -804,84 +782,80 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                             handleBeaconData(ruleName, (String) messageMap.get("text"), null);
                         }
                         break;
-
                     case MSActionTypeCard:
-                        if (!isPopupVisible) {
-                            MSCard card = (MSCard) messageMap.get("card");
-                            MSMedia m;
-                            String src;
-                            android.app.AlertDialog.Builder dialog;
+                        MSCard card = (MSCard) messageMap.get("card");
+                        MSMedia m;
+                        String src;
+                        android.app.AlertDialog.Builder dialog;
 
-                            String title = ruleName;
+                        String title = ruleName;
 
-                            switch (card.getType()) {
-                                case MSCardTypePhoto:
-                                    ArrayList<String> urls = new ArrayList<>();
-                                    for (int i = 0; i < card.getMediaArray().size(); i++) {
-                                        m = card.getMediaArray().get(i);
-                                        src = m.getMediaUrl().toString();
-                                        urls.add(src);
-                                    }
-                                    handleBeaconData(title, null, urls);
-                                    break;
-                                case MSCardTypeSummary:
-                                    ArrayList<String> cardUrls = new ArrayList<>();
-                                    for (int i = 0; i < card.getMediaArray().size(); i++) {
-                                        m = card.getMediaArray().get(i);
-                                        src = m.getMediaUrl().toString();
-                                        cardUrls.add(src);
-                                    }
-                                    handleBeaconData(card.getTitle(), card.getBody(), cardUrls);
-                                    break;
-                                case MSCardTypeMedia:
-                                    m = card.getMediaArray().get(0);
+                        switch (card.getType()) {
+                            case MSCardTypePhoto:
+                                ArrayList<String> urls = new ArrayList<>();
+                                for (int i = 0; i < card.getMediaArray().size(); i++) {
+                                    m = card.getMediaArray().get(i);
                                     src = m.getMediaUrl().toString();
+                                    urls.add(src);
+                                }
+                                handleBeaconData(title, null, urls);
+                                break;
+                            case MSCardTypeSummary:
+                                ArrayList<String> cardUrls = new ArrayList<>();
+                                for (int i = 0; i < card.getMediaArray().size(); i++) {
+                                    m = card.getMediaArray().get(i);
+                                    src = m.getMediaUrl().toString();
+                                    cardUrls.add(src);
+                                }
+                                handleBeaconData(card.getTitle(), card.getBody(), cardUrls);
+                                break;
+                            case MSCardTypeMedia:
+                                m = card.getMediaArray().get(0);
+                                src = m.getMediaUrl().toString();
 
-                                    // handle custom url types
-                                    String ytId = getYoutubeVideoId(src);
-                                    if (ytId != null) {
+                                // handle custom url types
+                                String ytId = getYoutubeVideoId(src);
+                                if (ytId != null) {
 //                                    showYoutubePopup(ytId, ok_label, ok_action);
-                                    } else {
-                                        dialog = new android.app.AlertDialog.Builder(context);
-                                        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                                            @Override
-                                            public void onDismiss(DialogInterface dialog) {
-                                                isPopupVisible = false;
+                                } else {
+                                    dialog = new android.app.AlertDialog.Builder(context);
+                                    dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                        @Override
+                                        public void onDismiss(DialogInterface dialog) {
+                                            isPopupVisible = false;
+                                        }
+                                    });
+                                    final WebView webView = new WebView(context);
+                                    webView.getSettings().setJavaScriptEnabled(true);
+                                    webView.setWebViewClient(new WebViewClient());
+                                    webView.loadUrl(src);
+                                    dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                            try {
+                                                Uri uri = Uri.parse("http://"); // missing 'http://' will cause crashed
+                                                Intent openUrl = new Intent(Intent.ACTION_VIEW, uri);
+                                                openUrl.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                                startActivity(openUrl);
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                             }
-                                        });
-                                        final WebView webView = new WebView(context);
-                                        webView.getSettings().setJavaScriptEnabled(true);
-                                        webView.setWebViewClient(new WebViewClient());
-                                        webView.loadUrl(src);
-                                        dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                dialog.dismiss();
-                                                try {
-                                                    Uri uri = Uri.parse("http://"); // missing 'http://' will cause crashed
-                                                    Intent openUrl = new Intent(Intent.ACTION_VIEW, uri);
-                                                    openUrl.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                                    startActivity(openUrl);
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
-                                                }
-                                            }
-                                        });
+                                        }
+                                    });
 
-                                        dialog.setView(webView);
-                                        dialog.setNeutralButton(getString(R.string.button_close), null);
-                                        dialog.show();
-                                    }
+                                    dialog.setView(webView);
+                                    dialog.setNeutralButton(getString(R.string.button_close), null);
+                                    dialog.show();
+                                }
 
-                                    break;
-                            }
+                                break;
                         }
                         break;
-
                     case MSActionTypeWebpage:
                         if (!isPopupVisible) {
-                            final android.app.AlertDialog.Builder dialog = new android.app.AlertDialog.Builder(context);
-                            dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            final android.app.AlertDialog.Builder webDialog = new android.app.AlertDialog.Builder(context);
+                            webDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                                 @Override
                                 public void onDismiss(DialogInterface dialog) {
                                     isPopupVisible = false;
@@ -893,9 +867,9 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                             webView.setWebViewClient(new WebViewClient());
                             webView.loadUrl(messageMap.get("url").toString());
 
-                            dialog.setView(webView);
-                            dialog.setPositiveButton("Close", null);
-                            dialog.show();
+                            webDialog.setView(webView);
+                            webDialog.setPositiveButton("Close", null);
+                            webDialog.show();
                         }
                         break;
 
@@ -910,7 +884,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     @Override
     protected void onPause() {
         super.onPause();
-        stopScanning();
     }
 
     private void sendNotification(Context context, String text, String title) {
@@ -932,6 +905,20 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                     context.getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
             notificationManager.notify(1, mBuilder.build());
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED) {
+            finish();
+        }
+        try {
+            bstac.startRangingBeacons();
+        } catch (MSException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override

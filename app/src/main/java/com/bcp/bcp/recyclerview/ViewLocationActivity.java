@@ -73,6 +73,7 @@ public class ViewLocationActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(ViewLocationActivity.this, MainActivity.class);
                 startActivity(intent);
+                finish();
             }
         });
 
@@ -103,6 +104,12 @@ public class ViewLocationActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(ViewLocationActivity.this, MainActivity.class);
+        startActivity(intent);
+        super.onBackPressed();
+    }
 
     class CallsComp implements Comparator<LocationFenceTrackDetails> {
 
