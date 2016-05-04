@@ -84,8 +84,8 @@ public class ViewLocationActivity extends AppCompatActivity {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(ViewLocationActivity.this);
 
-                builder.setMessage("Label in Yellow colour shows Entry \n Lablel in blue shows Exits \n Lable with (B) indicates that data from beacons" +
-                        "\n White colour label indicate out of office tracking details")
+                builder.setMessage("Yellow indicates Entry \n Blue indicates Exits \n Data with (B) indicates data from beacons" +
+                        "\n White indicate out of office tracking details")
                         .setCancelable(false)
                         .setNegativeButton("OK", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
