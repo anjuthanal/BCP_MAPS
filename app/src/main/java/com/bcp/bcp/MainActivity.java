@@ -258,6 +258,11 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             startService(intent);
         }
 
+
+        //DELETE 24 HRS PAST DATA FROM LOCAL DB
+        databaseHandler.deletePastFenceTiming();
+        databaseHandler.deletePastLocationData();
+
     }
 
     @Override
