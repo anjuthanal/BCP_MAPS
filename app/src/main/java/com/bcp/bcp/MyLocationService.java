@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.bcp.bcp.database.DatabaseHandler;
 import com.bcp.bcp.database.LocationData;
+import com.bcp.bcp.geofencing.Constants;
 
 import java.io.File;
 import java.io.IOException;
@@ -89,7 +90,7 @@ public class MyLocationService extends Service {
 
                 //insert lat/long as address in local db
                 Date curDate = new Date();
-                SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
+                SimpleDateFormat format = new SimpleDateFormat(Constants.TIME_FORMAT);
                 locEntryDate = format.format(curDate);
                 boolean isInserted;
 

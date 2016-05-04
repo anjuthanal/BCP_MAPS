@@ -4,6 +4,7 @@ import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.annotation.TargetApi;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
@@ -25,6 +26,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
@@ -83,7 +85,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -238,10 +239,8 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             @Override
             public void onReceive(Context context, Intent intent) {
 //                mRegistrationProgressBar.setVisibility(ProgressBar.GONE);
-                SharedPreferences sharedPreferences =
-                        PreferenceManager.getDefaultSharedPreferences(context);
-                boolean sentToken = sharedPreferences
-                        .getBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false);
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+                boolean sentToken = sharedPreferences.getBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false);
                 if (sentToken) {
 //                    mInformationTextView.setText(getString(R.string.gcm_send_message));
                 } else {
@@ -259,6 +258,11 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             startService(intent);
         }
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         receiver = new BeaconstacReceiver();
         receiver.setOnOnRuleTriggeredListener(this);
 
@@ -267,8 +271,9 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
         getBluetoothAdapter();//beacons
 
+        if (mGoogleApiClient != null && !mGoogleApiClient.isConnected())
+            mGoogleApiClient.connect();
     }
-
 
     /**
      * This sample hard codes geofence data. A real app might dynamically create geofences based on
@@ -471,11 +476,11 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             mGoogleApiClient.connect();
     }
 
-    @Override
+   /* @Override
     protected void onStop() {
         super.onStop();
         mGoogleApiClient.disconnect();
-    }
+    }*/
 
     /**
      * Runs when a GoogleApiClient object successfully connects.
@@ -655,11 +660,13 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     String gemail = "";
 
     private void handleBeaconData(String title, String text, ArrayList<String> url) {
+        sendNotification(this, text, title);
+
         databaseHandler = new DatabaseHandler(this);
         FenceTiming previousFenceEntry = databaseHandler.getFenceTimingByAddress(title + ", " + text + "(B)");
 
         Date currentEntryDate = new Date();
-        SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss", Locale.getDefault());
+        SimpleDateFormat format = new SimpleDateFormat(Constants.TIME_FORMAT);
         bEntryDate = format.format(currentEntryDate);
         Date previousEntryDate = null;
         long timeStampDifference = 0;
@@ -674,6 +681,10 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
         if (previousEntryDate != null) {
             timeStampDifference = currentEntryDate.getTime() - previousEntryDate.getTime();
+        }
+
+        if (previousFenceEntry != null && previousFenceEntry.getStatus().contains("Exited")) {
+            timeStampDifference = 0;
         }
 
         if (timeStampDifference < Constants.TIMESTAMP_DIFF) {
@@ -699,7 +710,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 asyncFT.execute();
             }
         } else {
-            Log.e(TAG, "handleBeaconData: " + bstatus);
+            Log.e(TAG, "false: " + bstatus);
             bstatus = "Exited: " + title + ", " + text;
             databaseHandler.updateFenceEntryStatus(previousFenceEntry.getDatetime(), bstatus);
         }
@@ -753,6 +764,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     }
 
     public void stopScanning() {
+        /*
         if (bstac != null) {
             try {
                 bstac.stopRangingBeacons();
@@ -760,6 +772,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 e.printStackTrace();
             }
         }
+        */
     }
 
     @Override
@@ -881,8 +894,28 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     @Override
     protected void onPause() {
         super.onPause();
-        getBluetoothAdapter();
-        // stopScanning();
+        stopScanning();
+    }
+
+    private void sendNotification(Context context, String text, String title) {
+        if (context != null) {
+            Intent activityIntent = new Intent(context.getApplicationContext(), MainActivity.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(
+                    context.getApplicationContext(),
+                    0,
+                    activityIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+            );
+
+            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context.getApplicationContext())
+                    .setContentTitle(title)
+                    .setContentText(text)
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setContentIntent(pendingIntent);
+            NotificationManager notificationManager = (NotificationManager)
+                    context.getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.notify(1, mBuilder.build());
+        }
     }
 
     @Override
@@ -894,7 +927,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         } catch (IllegalArgumentException e) {
 
         }
-        // stopScanning();
+        stopScanning();
     }
 
 

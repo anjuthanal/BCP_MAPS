@@ -185,8 +185,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         if (fenceTimingList != null && fenceTimingList.size() > 0) {
             Collections.reverse(fenceTimingList);
             fenceTimingToShow = fenceTimingList.get(0);
+            return fenceTimingToShow;
         }
-        return fenceTimingToShow;
+        return null;
     }
 
     public void updateFenceEntryStatus(String time, String status) {

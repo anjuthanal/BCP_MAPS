@@ -33,7 +33,8 @@ public final class Constants {
      * stops tracking the geofence.
      */
     public static final long GEOFENCE_EXPIRATION_IN_HOURS = 12;
-    public static final long TIMESTAMP_DIFF = 30 * /*60 * 60 **/ 1000; /* 3 hours in millis*/
+    public static final String TIME_FORMAT = "dd-M-yyyy HH:mm:ss";
+    public static final long TIMESTAMP_DIFF = 60 * 1000; /* 3 hours in millis = 3 * 60 * 60 * 1000*/
     public final static String youtubeURLPattern = "(?:youtube(?:-nocookie)?\\.com\\/(?:[^\\/\\n\\s]+\\/\\S+\\/|(?:v|e(?:mbed)?)\\/|\\S*?[?&]v=)|youtu\\.be\\/)([a-zA-Z0-9_-]{11})";
 
     /**

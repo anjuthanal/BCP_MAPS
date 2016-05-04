@@ -18,6 +18,7 @@ import com.bcp.bcp.R;
 import com.bcp.bcp.database.DatabaseHandler;
 import com.bcp.bcp.database.FenceTiming;
 import com.bcp.bcp.database.LocationData;
+import com.bcp.bcp.geofencing.Constants;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -62,7 +63,7 @@ public class ViewLocationActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(locationDetailsAdapter);
-        format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
+        format = new SimpleDateFormat(Constants.TIME_FORMAT);
 
         prepareFenceDetailsOBject();
 

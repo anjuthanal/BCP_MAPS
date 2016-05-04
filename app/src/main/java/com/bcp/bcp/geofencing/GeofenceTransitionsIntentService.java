@@ -160,7 +160,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
         }
         String triggeringGeofencesIdsString = TextUtils.join(", ", triggeringGeofencesIdsList);
         Date curDate = new Date();
-        SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
+        SimpleDateFormat format = new SimpleDateFormat(Constants.TIME_FORMAT);
         gEntryDate = format.format(curDate);
         boolean isInserted;
 
