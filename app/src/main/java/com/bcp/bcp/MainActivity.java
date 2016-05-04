@@ -258,6 +258,13 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             startService(intent);
         }
 
+        receiver = new BeaconstacReceiver();
+        receiver.setOnOnRuleTriggeredListener(this);
+
+        populateGeofenceList();
+        buildGoogleApiClient();
+
+        getBluetoothAdapter();//beacons
 
         //DELETE 24 HRS PAST DATA FROM LOCAL DB
         databaseHandler.deletePastFenceTiming();
@@ -268,16 +275,20 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     @Override
     protected void onResume() {
         super.onResume();
-        receiver = new BeaconstacReceiver();
-        receiver.setOnOnRuleTriggeredListener(this);
 
-        populateGeofenceList();
-        buildGoogleApiClient();
-
-        getBluetoothAdapter();//beacons
-
-        if (mGoogleApiClient != null && !mGoogleApiClient.isConnected())
+        if (mGoogleApiClient != null && !mGoogleApiClient.isConnected()) {
             mGoogleApiClient.connect();
+        }
+
+        if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
+            try {
+                if (receiver != null) unregisterReceiver(receiver);
+                if (placeSyncReceiver != null) unregisterReceiver(placeSyncReceiver);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
+            syncBeacon();
+        }
     }
 
     /**
@@ -930,7 +941,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             if (receiver != null) unregisterReceiver(receiver);
             if (placeSyncReceiver != null) unregisterReceiver(placeSyncReceiver);
         } catch (IllegalArgumentException e) {
-
+            e.printStackTrace();
         }
         stopScanning();
     }
