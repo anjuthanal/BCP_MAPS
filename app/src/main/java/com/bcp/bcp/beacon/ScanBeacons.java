@@ -216,7 +216,7 @@ public class ScanBeacons extends Service implements BeaconstacReceiver.OnRuleTri
         String bEntryDate = format.format(currentEntryDate);
         Date previousEntryDate = null;
         long timeStampDifference = 0;
-        String geofenceAddress = title + ", " + text;
+        String geofenceAddress = title + " " + text + "(B)";
 
         if (previousFenceEntry != null) {
             try {
@@ -250,9 +250,9 @@ public class ScanBeacons extends Service implements BeaconstacReceiver.OnRuleTri
                 }
             }
 
-            geoFenceState = "Entered " + "(B)";
+            geoFenceState = "Entered " ;
         } else {
-            geoFenceState = "Exited " + "(B)";
+            geoFenceState = "Exited " ;
             bstatus = "Exited: " + title + ", " + text;
             databaseHandler.updateFenceEntryStatus(previousFenceEntry.getDatetime(), bstatus);
         }
