@@ -32,7 +32,6 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bcp.bcp.beacon.BeaconstacReceiver;
 import com.bcp.bcp.beacon.ScanBeacons;
 import com.bcp.bcp.database.DatabaseHandler;
 import com.bcp.bcp.database.FenceTiming;
@@ -56,10 +55,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.mobstac.beaconstac.core.Beaconstac;
-import com.mobstac.beaconstac.core.PlaceSyncReceiver;
-import com.mobstac.beaconstac.utils.MSException;
-import com.mobstac.beaconstac.utils.MSLogger;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -99,15 +94,11 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private static final String TAG = "MainActivity";
 
-    private BroadcastReceiver mRegistrationBroadcastReceiver;
-    private boolean isReceiverRegistered;
     DatabaseHandler databaseHandler;
     private ArrayList<Geofence> mGeofenceList;
     private PendingIntent mGeofencePendingIntent;
 
     private BluetoothAdapter mBluetoothAdapter;
-    private BeaconstacReceiver receiver;
-    private Beaconstac bstac;
 
     List<FenceTiming> fenceTimingList = new ArrayList<FenceTiming>();
     List<LocationData> locationDataList = new ArrayList<LocationData>();
@@ -121,6 +112,8 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     static final long DAY = 24 * 60 * 60 * 1000;
     List<LocationFenceTrackDetails> diplayList = new ArrayList<LocationFenceTrackDetails>();
+    private BroadcastReceiver mRegistrationBroadcastReceiver;
+    private boolean isReceiverRegistered;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -243,9 +236,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             Intent intent = new Intent(this, RegistrationIntentService.class);
             startService(intent);
         }
-
-        receiver = new BeaconstacReceiver();
-        receiver.setOnOnRuleTriggeredListener(this);
 
         populateGeofenceList();
         buildGoogleApiClient();
@@ -567,66 +557,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             requestPermissions(new String[]{ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
         }
     }
-
-    PlaceSyncReceiver placeSyncReceiver = new PlaceSyncReceiver() {
-
-        @Override
-        public void onSuccess(Context context) {
-            bstac.enableGeofences(true);
-
-            // start ranging
-            try {
-                bstac.startRangingBeacons();
-            } catch (MSException e) {
-                e.printStackTrace();
-            }
-        }
-
-        @Override
-        public void onFailure(Context context) {
-            MSLogger.error("Error syncing geofence");
-        }
-
-    };
-
-   /* public void syncBeacon() {
-        Toast.makeText(this, "Scanning for beacons", Toast.LENGTH_LONG).show();
-        bstac = Beaconstac.getInstance(this);
-        bstac.setRegionParams("F94DBB23-2266-7822-3782-57BEAC0952AC", "com.bcp.bcp");
-        bstac.syncRules();
-        // bstac.setActiveScanDuration(12000);
-
-        LocationManager locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (locManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-
-            bstac.syncPlaces();
-
-            IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_PLACE_SYNC_SUCCESS);
-            intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_PLACE_SYNC_FAILURE);
-            registerReceiver(placeSyncReceiver, intentFilter);
-        } else {
-            try {
-                bstac.startRangingBeacons();
-            } catch (MSException e) {
-                e.printStackTrace();
-            }
-        }
-        registerBroadcast();
-    }
-
-    private void registerBroadcast() {
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_RANGED_BEACON);
-        intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_CAMPED_BEACON);
-        intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_EXITED_BEACON);
-        intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_RULE_TRIGGERED);
-        intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_ENTERED_REGION);
-        intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_EXITED_REGION);
-        registerReceiver(receiver, intentFilter);
-    }*/
-
-    boolean isInserted;
 
     /**
      * Opens a dialogFragment to display offers
