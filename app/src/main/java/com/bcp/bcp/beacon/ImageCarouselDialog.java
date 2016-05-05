@@ -99,7 +99,6 @@ public class ImageCarouselDialog extends DialogFragment {
                 dismiss();
                 MainActivity experienceDemoActivity = (MainActivity) getActivity();
                 experienceDemoActivity.setIsPopupVisible(false);
-                experienceDemoActivity.stopScanning();
             }
         });
 
@@ -109,7 +108,6 @@ public class ImageCarouselDialog extends DialogFragment {
             public void onClick(View v) {
                 MainActivity experienceDemoActivity = (MainActivity) getActivity();
                 experienceDemoActivity.setIsPopupVisible(false);
-                experienceDemoActivity.stopScanning();
                 Uri uri = Uri.parse(text);
 
             }
