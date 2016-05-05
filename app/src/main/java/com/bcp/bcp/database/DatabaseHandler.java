@@ -56,7 +56,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.execSQL(CREATE_GEOFENCE_TABLE);
 
         String CREATE_FENCETIMING_TABLE = "CREATE TABLE " + TABLE_FENCETIMING + "("
-                + KEY_TIMINGID + " INTEGER PRIMARY KEY, " + KEY_FENCEADDRESS + " TEXT," + KEY_STATUS + " TEXT," + KEY_DATETIME + " TEXT" + ")";
+                + KEY_TIMINGID + " INTEGER PRIMARY KEY, " + KEY_FENCEADDRESS + " TEXT," + KEY_STATUS + " TEXT," + KEY_DATETIME + " TEXT UNIQUE" + ")";
         db.execSQL(CREATE_FENCETIMING_TABLE);
 
         String CREATE_TABLE_LOCATION = "CREATE TABLE " + TABLE_LOCATION + "("
@@ -122,7 +122,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     }
 
 
-
     public boolean deletePastLocationData() {
         boolean isDeleted = false;
         List<LocationData> locationDataList = new ArrayList<LocationData>();
@@ -151,9 +150,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             } while (cursor.moveToNext());
         }
 
-        if(locationDataList != null && locationDataList.size() > 0){
+        if (locationDataList != null && locationDataList.size() > 0) {
 
-            Log.e("Before delete size : "," : "+locationDataList.size());
+            Log.e("Before delete size : ", " : " + locationDataList.size());
 
             for (LocationData locationData : locationDataList) {
                 try {
@@ -176,29 +175,33 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             }
         }
 
-        if(locationDataToDisplay != null && locationDataToDisplay.size() > 0){
-            Log.e("After delete size : "," : "+locationDataToDisplay.size());
+        if (locationDataToDisplay != null && locationDataToDisplay.size() > 0) {
+            Log.e("After delete size : ", " : " + locationDataToDisplay.size());
         }
         return isDeleted;
     }
 
     public boolean addFenceTiming(FenceTiming fenceTiming) {
-        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
         boolean isInserted = false;
+        try {
+            SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
 
-        ContentValues values = new ContentValues();
-        values.put(KEY_FENCEADDRESS, fenceTiming.getFenceAddress());
-        values.put(KEY_STATUS, fenceTiming.getStatus());
-        values.put(KEY_DATETIME, fenceTiming.getDatetime());
+            ContentValues values = new ContentValues();
+            values.put(KEY_FENCEADDRESS, fenceTiming.getFenceAddress());
+            values.put(KEY_STATUS, fenceTiming.getStatus());
+            values.put(KEY_DATETIME, fenceTiming.getDatetime());
 
-        if (values != null) {
-            // Inserting Row
-            sqLiteDatabase.insert(TABLE_FENCETIMING, null, values);
-            isInserted = true;
+            if (values != null) {
+                // Inserting Row
+                sqLiteDatabase.insert(TABLE_FENCETIMING, null, values);
+                isInserted = true;
+            }
+            //2nd argument is String containing nullColumnHack
+            sqLiteDatabase.close(); // Closing database connection
+
+        } catch (Exception e) {
+
         }
-        //2nd argument is String containing nullColumnHack
-        sqLiteDatabase.close(); // Closing database connection
-
         return isInserted;
     }
 
@@ -228,7 +231,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return fenceTimingList;
     }
 
-    public boolean  deletePastFenceTiming() {
+    public boolean deletePastFenceTiming() {
         boolean isDeleted = false;
         SimpleDateFormat format = new SimpleDateFormat("dd-M-yyyy hh:mm:ss", Locale.getDefault());
         List<FenceTiming> fenceTimingList = new ArrayList<FenceTiming>();
@@ -253,9 +256,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 fenceTimingList.add(fenceTiming);
             } while (cursor.moveToNext());
         }
-        if(fenceTimingList != null && fenceTimingList.size() > 0){
+        if (fenceTimingList != null && fenceTimingList.size() > 0) {
 
-            Log.e("Before delete size : "," : "+fenceTimingList.size());
+            Log.e("Before delete size : ", " : " + fenceTimingList.size());
 
             for (FenceTiming fenceTiming : fenceTimingList) {
                 try {
@@ -278,8 +281,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             }
         }
 
-        if(fenceTimingListToDisplay != null && fenceTimingListToDisplay.size() > 0){
-            Log.e("After delete size : "," : "+fenceTimingListToDisplay.size());
+        if (fenceTimingListToDisplay != null && fenceTimingListToDisplay.size() > 0) {
+            Log.e("After delete size : ", " : " + fenceTimingListToDisplay.size());
         }
         return isDeleted;
     }

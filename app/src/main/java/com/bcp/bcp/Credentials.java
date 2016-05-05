@@ -119,6 +119,7 @@ public class Credentials {
     }
 
     public void insertIntoGeoFusionTables(File file) {
+        Log.e("saveGeoFile ", file.getName());
         initializeGoogleCredential();
         String tableId;
         try {

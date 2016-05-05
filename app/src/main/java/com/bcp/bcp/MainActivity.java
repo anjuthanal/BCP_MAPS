@@ -44,6 +44,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bcp.bcp.beacon.BeaconstacReceiver;
+import com.bcp.bcp.beacon.ScanBeacons;
 import com.bcp.bcp.database.DatabaseHandler;
 import com.bcp.bcp.database.FenceTiming;
 import com.bcp.bcp.database.LocationData;
@@ -165,10 +166,10 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
         samplelocFenDetailses = prepareCardDetails();
         if (samplelocFenDetailses != null && samplelocFenDetailses.size() > 0) {
-            textadd.setText(samplelocFenDetailses.get(0).getAddress());
+            textadd.setText(samplelocFenDetailses.get(0).getAddress().replace(",", "\n"));
             texttime.setText(samplelocFenDetailses.get(0).getTime());
             if (samplelocFenDetailses.size() > 1) {
-                textadd2.setText(samplelocFenDetailses.get(1).getAddress());
+                textadd2.setText(samplelocFenDetailses.get(1).getAddress().replace(",", "\n"));
                 texttime2.setText(samplelocFenDetailses.get(1).getTime());
             }
 
@@ -188,6 +189,9 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             texttime.setVisibility(View.INVISIBLE);
             texttime2.setVisibility(View.INVISIBLE);
         }
+
+        Intent beaconintent = new Intent(this, ScanBeacons.class);
+        startService(beaconintent);
 
         if (gps.canGetLocation()) {
             latitude = gps.getLatitude();
@@ -562,11 +566,11 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     @TargetApi(Build.VERSION_CODES.M)
     public void checkLocationPermission() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            syncBeacon();
+//            syncBeacon();
             return;
         }
         if (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            syncBeacon();
+//            syncBeacon();
             return;
         }
         if (shouldShowRequestPermissionRationale(ACCESS_FINE_LOCATION)) {
@@ -604,7 +608,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     };
 
-    public void syncBeacon() {
+   /* public void syncBeacon() {
         Toast.makeText(this, "Scanning for beacons", Toast.LENGTH_LONG).show();
         bstac = Beaconstac.getInstance(this);
         bstac.setRegionParams("F94DBB23-2266-7822-3782-57BEAC0952AC", "com.bcp.bcp");
@@ -639,7 +643,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_ENTERED_REGION);
         intentFilter.addAction(MSConstants.BEACONSTAC_INTENT_EXITED_REGION);
         registerReceiver(receiver, intentFilter);
-    }
+    }*/
 
     boolean isInserted;
 
@@ -650,13 +654,13 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
      * @param text  Summary of dialog (pass null to hide summary)
      * @param url   ArrayList containing URLs of images (pass null to hide images)
      */
-    String[] geoFenceState;
+    String geoFenceState;
     String bstatus = "";
     String btitle = "";
     String bEntryDate = "";
     String gemail = "";
 
-    private void handleBeaconData(String title, String text, ArrayList<String> url) {
+    /*private void handleBeaconData(String title, String text, ArrayList<String> url) {
         sendNotification(this, text, title);
 
         databaseHandler = new DatabaseHandler(this);
@@ -702,22 +706,24 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 }
             }
 
-            if (switchCompat.isChecked()) {
-                InsertFutionTable asyncFT = new InsertFutionTable();
-                asyncFT.execute();
-            }
+            geoFenceState = "Entered";
         } else {
+            geoFenceState = "Exited";
             Log.e(TAG, "false: " + bstatus);
             bstatus = "Exited: " + title + ", " + text;
             databaseHandler.updateFenceEntryStatus(previousFenceEntry.getDatetime(), bstatus);
         }
-    }
+        if (switchCompat.isChecked()) {
+            InsertFutionTable asyncFT = new InsertFutionTable();
+            asyncFT.execute();
+        }
+    }*/
 
     class InsertFutionTable extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... params) {
-            credentials.insertIntoGeoFusionTables(MainActivity.saveGeoFile(btitle, geoFenceState[0], bEntryDate, gemail, "geofile"));
+            credentials.insertIntoGeoFusionTables(MainActivity.saveGeoFile(btitle, geoFenceState, bEntryDate, gemail, "geofile"));
             return null;
         }
     }
@@ -772,7 +778,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     @Override
     public void onTriggeredRule(Context context, String ruleName, ArrayList<MSAction> actions) {
-        {
+        /*{
             HashMap<String, Object> messageMap;
             for (MSAction action : actions) {
                 messageMap = action.getMessage();
@@ -878,7 +884,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                         break;
                 }
             }
-        }
+        }*/
     }
 
     @Override
@@ -913,15 +919,9 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED) {
             finish();
         }
-        try {
-            bstac.startRangingBeacons();
-        } catch (MSException e) {
-            e.printStackTrace();
-        }
-
     }
 
-    @Override
+   /* @Override
     protected void onDestroy() {
         super.onDestroy();
         try {
@@ -931,7 +931,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             e.printStackTrace();
         }
         stopScanning();
-    }
+    }*/
 
 
     class CallsComp implements Comparator<LocationFenceTrackDetails> {
@@ -955,25 +955,27 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     public List<LocationFenceTrackDetails> getDataToDisplay(List<LocationFenceTrackDetails> samplelocFenDetailses) {
         diplayList = new ArrayList<>();
 
-        for (LocationFenceTrackDetails fenceTrackDetails : samplelocFenDetailses) {
-            try {
-                Date dateFromDb = format.parse(fenceTrackDetails.getTime());
-                dbmilli = dateFromDb.getTime();
-                cyurrDatemilli = new Date().getTime();
-                if (dbmilli > cyurrDatemilli - DAY) {
+        if (samplelocFenDetailses != null && samplelocFenDetailses.size() > 0) {
+            for (LocationFenceTrackDetails fenceTrackDetails : samplelocFenDetailses) {
+                try {
+                    Date dateFromDb = format.parse(fenceTrackDetails.getTime());
+                    dbmilli = dateFromDb.getTime();
+                    cyurrDatemilli = new Date().getTime();
+                    if (dbmilli > cyurrDatemilli - DAY) {
 
-                    diplayList.add(fenceTrackDetails);
-                } else {
+                        diplayList.add(fenceTrackDetails);
+                    } else {
 
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+            Collections.reverse(diplayList);
+            Log.e("dbmilli", ":" + ":" + dbmilli);
+            Log.e("cyurrDatemilli", ":" + cyurrDatemilli);
         }
-        Collections.reverse(diplayList);
-        Log.e("dbmilli", ":" + ":" + dbmilli);
-        Log.e("cyurrDatemilli", ":" + cyurrDatemilli);
         return diplayList;
     }
 
@@ -999,7 +1001,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 trackDetails.setTime(locationData.getLocDatetime());
                 samplelocFenDetailses.add(trackDetails);
             }
-            if (samplelocFenDetailses != null) {
+            if (samplelocFenDetailses != null && samplelocFenDetailses.size() > 0) {
                 Collections.sort(samplelocFenDetailses, new CallsComp());
 
             }

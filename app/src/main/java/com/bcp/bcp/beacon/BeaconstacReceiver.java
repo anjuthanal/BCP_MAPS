@@ -39,7 +39,7 @@ public class BeaconstacReceiver extends com.mobstac.beaconstac.core.BeaconstacRe
     @Override
     public void rangedBeacons(Context context, ArrayList<MSBeacon> beacons) {
         Log.v(BeaconstacReceiver.class.getName(), "Ranged called " + beacons.size());
-        sendNotification(context, "Ranged " + beacons.size() + " beacons");
+//        sendNotification(context, "Ranged " + beacons.size() + " beacons");
     }
 
     @Override

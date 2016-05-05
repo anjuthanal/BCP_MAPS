@@ -125,7 +125,7 @@
         <service
             android:name=".beacon.ScanBeacons"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
     </application>
 
 </manifest>
