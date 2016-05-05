@@ -1,17 +1,13 @@
 package com.bcp.bcp;
 
 import android.Manifest;
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -20,25 +16,18 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.SwitchCompat;
-import android.text.TextUtils;
 import android.util.Log;
-import android.util.Patterns;
 import android.view.View;
 import android.view.Window;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -68,34 +57,26 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.mobstac.beaconstac.core.Beaconstac;
-import com.mobstac.beaconstac.core.MSConstants;
 import com.mobstac.beaconstac.core.PlaceSyncReceiver;
-import com.mobstac.beaconstac.models.MSAction;
-import com.mobstac.beaconstac.models.MSCard;
-import com.mobstac.beaconstac.models.MSMedia;
 import com.mobstac.beaconstac.utils.MSException;
 import com.mobstac.beaconstac.utils.MSLogger;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 public class MainActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, LocationListener,
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status>, BeaconstacReceiver.OnRuleTriggered {
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status> {
     private SwitchCompat switchCompat;
     private GoogleMap gmap;
 
@@ -190,8 +171,8 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             texttime2.setVisibility(View.INVISIBLE);
         }
 
-        Intent beaconintent = new Intent(this, ScanBeacons.class);
-        startService(beaconintent);
+        Intent beaconIntent = new Intent(this, ScanBeacons.class);
+        startService(beaconIntent);
 
         if (gps.canGetLocation()) {
             latitude = gps.getLatitude();
@@ -660,74 +641,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     String bEntryDate = "";
     String gemail = "";
 
-    /*private void handleBeaconData(String title, String text, ArrayList<String> url) {
-        sendNotification(this, text, title);
-
-        databaseHandler = new DatabaseHandler(this);
-        FenceTiming previousFenceEntry = databaseHandler.getFenceTimingByAddress(title + ", " + text + "(B)");
-
-        Date currentEntryDate = new Date();
-        SimpleDateFormat format = new SimpleDateFormat(Constants.TIME_FORMAT);
-        bEntryDate = format.format(currentEntryDate);
-        Date previousEntryDate = null;
-        long timeStampDifference = 0;
-
-        if (previousFenceEntry != null) {
-            try {
-                previousEntryDate = format.parse(TextUtils.isEmpty(previousFenceEntry.getDatetime()) ? "" : previousFenceEntry.getDatetime());
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (previousEntryDate != null) {
-            timeStampDifference = currentEntryDate.getTime() - previousEntryDate.getTime();
-        }
-
-        if (previousFenceEntry != null && previousFenceEntry.getStatus().contains("Exited")) {
-            timeStampDifference = 0;
-        }
-
-        if (timeStampDifference < Constants.TIMESTAMP_DIFF) {
-            bstatus = "Entered: " + title + ", " + text;
-            btitle = title;
-
-            isInserted = databaseHandler.addFenceTiming(new FenceTiming(title + ", " + text + "(B)", bstatus, bEntryDate));
-            if (isInserted) {
-                Log.e("GeofenceonsIS : ", "inserted to local fence db");
-            }
-
-            Pattern gmailPattern = Patterns.EMAIL_ADDRESS;
-            Account[] accounts = AccountManager.get(this).getAccounts();
-
-            for (Account account : accounts) {
-                if (gmailPattern.matcher(account.name).matches()) {
-                    gemail = account.name;
-                }
-            }
-
-            geoFenceState = "Entered";
-        } else {
-            geoFenceState = "Exited";
-            Log.e(TAG, "false: " + bstatus);
-            bstatus = "Exited: " + title + ", " + text;
-            databaseHandler.updateFenceEntryStatus(previousFenceEntry.getDatetime(), bstatus);
-        }
-        if (switchCompat.isChecked()) {
-            InsertFutionTable asyncFT = new InsertFutionTable();
-            asyncFT.execute();
-        }
-    }*/
-
-    class InsertFutionTable extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            credentials.insertIntoGeoFusionTables(MainActivity.saveGeoFile(btitle, geoFenceState, bEntryDate, gemail, "geofile"));
-            return null;
-        }
-    }
-
     public static File saveGeoFile(String address, String status, String date, String mail, String geofile) {
 
         String textToSave = address + "," + status + "," + date + "," + mail;
@@ -754,185 +667,17 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     private boolean isPopupVisible;
 
-    public static String getYoutubeVideoId(String videoUrl) {
-        if (videoUrl == null || videoUrl.trim().length() <= 0)
-            return null;
-
-        Pattern pattern = Pattern.compile(Constants.youtubeURLPattern, Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(videoUrl);
-
-        if (matcher.find())
-            return matcher.group(1);
-        return null;
-    }
-
-    public void stopScanning() {
-        /*if (bstac != null) {
-            try {
-                bstac.stopRangingBeacons();
-            } catch (MSException e) {
-                e.printStackTrace();
-            }
-        }*/
-    }
-
-    @Override
-    public void onTriggeredRule(Context context, String ruleName, ArrayList<MSAction> actions) {
-        /*{
-            HashMap<String, Object> messageMap;
-            for (MSAction action : actions) {
-                messageMap = action.getMessage();
-                switch (action.getType()) {
-                    case MSActionTypePopup:
-                        if (!isPopupVisible) {
-                            handleBeaconData(ruleName, (String) messageMap.get("text"), null);
-                        }
-                        break;
-                    case MSActionTypeCard:
-                        MSCard card = (MSCard) messageMap.get("card");
-                        MSMedia m;
-                        String src;
-                        android.app.AlertDialog.Builder dialog;
-
-                        String title = ruleName;
-
-                        switch (card.getType()) {
-                            case MSCardTypePhoto:
-                                ArrayList<String> urls = new ArrayList<>();
-                                for (int i = 0; i < card.getMediaArray().size(); i++) {
-                                    m = card.getMediaArray().get(i);
-                                    src = m.getMediaUrl().toString();
-                                    urls.add(src);
-                                }
-                                handleBeaconData(title, null, urls);
-                                break;
-                            case MSCardTypeSummary:
-                                ArrayList<String> cardUrls = new ArrayList<>();
-                                for (int i = 0; i < card.getMediaArray().size(); i++) {
-                                    m = card.getMediaArray().get(i);
-                                    src = m.getMediaUrl().toString();
-                                    cardUrls.add(src);
-                                }
-                                handleBeaconData(card.getTitle(), card.getBody(), cardUrls);
-                                break;
-                            case MSCardTypeMedia:
-                                m = card.getMediaArray().get(0);
-                                src = m.getMediaUrl().toString();
-
-                                // handle custom url types
-                                String ytId = getYoutubeVideoId(src);
-                                if (ytId != null) {
-//                                    showYoutubePopup(ytId, ok_label, ok_action);
-                                } else {
-                                    dialog = new android.app.AlertDialog.Builder(context);
-                                    dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                                        @Override
-                                        public void onDismiss(DialogInterface dialog) {
-                                            isPopupVisible = false;
-                                        }
-                                    });
-                                    final WebView webView = new WebView(context);
-                                    webView.getSettings().setJavaScriptEnabled(true);
-                                    webView.setWebViewClient(new WebViewClient());
-                                    webView.loadUrl(src);
-                                    dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            dialog.dismiss();
-                                            try {
-                                                Uri uri = Uri.parse("http://"); // missing 'http://' will cause crashed
-                                                Intent openUrl = new Intent(Intent.ACTION_VIEW, uri);
-                                                openUrl.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                                startActivity(openUrl);
-                                            } catch (Exception e) {
-                                                e.printStackTrace();
-                                            }
-                                        }
-                                    });
-
-                                    dialog.setView(webView);
-                                    dialog.setNeutralButton(getString(R.string.button_close), null);
-                                    dialog.show();
-                                }
-
-                                break;
-                        }
-                        break;
-                    case MSActionTypeWebpage:
-                        if (!isPopupVisible) {
-                            final android.app.AlertDialog.Builder webDialog = new android.app.AlertDialog.Builder(context);
-                            webDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                                @Override
-                                public void onDismiss(DialogInterface dialog) {
-                                    isPopupVisible = false;
-                                }
-                            });
-
-                            final WebView webView = new WebView(context);
-                            webView.getSettings().setJavaScriptEnabled(true);
-                            webView.setWebViewClient(new WebViewClient());
-                            webView.loadUrl(messageMap.get("url").toString());
-
-                            webDialog.setView(webView);
-                            webDialog.setPositiveButton("Close", null);
-                            webDialog.show();
-                        }
-                        break;
-
-                    case MSActionTypeCustom:
-                        MSLogger.log("Card id: " + action.getActionID());
-                        break;
-                }
-            }
-        }*/
-    }
-
     @Override
     protected void onPause() {
         super.onPause();
-    }
-
-    private void sendNotification(Context context, String text, String title) {
-        if (context != null) {
-            Intent activityIntent = new Intent(context.getApplicationContext(), MainActivity.class);
-            PendingIntent pendingIntent = PendingIntent.getActivity(
-                    context.getApplicationContext(),
-                    0,
-                    activityIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT
-            );
-
-            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context.getApplicationContext())
-                    .setContentTitle(title)
-                    .setContentText(text)
-                    .setSmallIcon(R.mipmap.ic_launcher)
-                    .setContentIntent(pendingIntent);
-            NotificationManager notificationManager = (NotificationManager)
-                    context.getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
-            notificationManager.notify(1, mBuilder.build());
-        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED) {
-            finish();
         }
     }
-
-   /* @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        try {
-            if (receiver != null) unregisterReceiver(receiver);
-            if (placeSyncReceiver != null) unregisterReceiver(placeSyncReceiver);
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        }
-        stopScanning();
-    }*/
-
 
     class CallsComp implements Comparator<LocationFenceTrackDetails> {
 
