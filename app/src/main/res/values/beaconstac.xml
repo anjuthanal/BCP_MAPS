@@ -18,12 +18,12 @@
     <integer name="analyticsPostInterval">900</integer>
 
     <!-- Beaconstac API token -->
-   <string name="api_key">627acfe6042d1da7d3e2fae7ff95d3cf175d7a9f</string>
-    <!--<string name="api_key">e907f94f5855f9149c71dbbe3c4e4d33df259418</string>-->
+    <!--<string name="api_key">627acfe6042d1da7d3e2fae7ff95d3cf175d7a9f</string>-->
+     <string name="api_key">e907f94f5855f9149c71dbbe3c4e4d33df259418</string>
 
    <!-- Organization id -->
-    <integer name="organization_id">1159</integer>
-    <!--<integer name="organization_id">1229</integer>-->
+    <!-- <integer name="organization_id">1159</integer>-->
+     <integer name="organization_id">1229</integer>
     <!-- Provider authority -->
     <string name="provider">com.bcp.bcp.beacon.provider</string>
 

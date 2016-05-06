@@ -237,31 +237,45 @@ public class ScanBeacons extends Service implements BeaconstacReceiver.OnRuleTri
         String bstatus = "";
         String geoFenceState;
         String gemail = "";
+
+        Pattern gmailPattern = Patterns.EMAIL_ADDRESS;
+        Account[] accounts = AccountManager.get(this).getAccounts();
+
+        for (Account account : accounts) {
+            if (gmailPattern.matcher(account.name).matches()) {
+                gemail = account.name;
+            }
+        }
+
         if (timeStampDifference < Constants.TIMESTAMP_DIFF) {
             bstatus = "Entered: " + title + ", " + text;
-
             databaseHandler.addFenceTiming(new FenceTiming(title + ", " + text + "(B)", bstatus, bEntryDate));
-            Pattern gmailPattern = Patterns.EMAIL_ADDRESS;
-            Account[] accounts = AccountManager.get(this).getAccounts();
-
-            for (Account account : accounts) {
-                if (gmailPattern.matcher(account.name).matches()) {
-                    gemail = account.name;
-                }
-            }
-
             geoFenceState = "Entered " ;
+
+            if (mSharedPreferences.getBoolean("SWITCH", false)) {
+                InsertFutionTable asyncFT = new InsertFutionTable(geofenceAddress, geoFenceState, bEntryDate, gemail);
+                // google office(B), 2nd floor, entered/exited, time, mail
+                asyncFT.execute();
+            }
         } else {
-            geoFenceState = "Exited " ;
+            geoFenceState = "Exited ";
             bstatus = "Exited: " + title + ", " + text;
             databaseHandler.updateFenceEntryStatus(previousFenceEntry.getDatetime(), bstatus);
+
+            bstatus = "Entered: " + title + ", " + text;
+            databaseHandler.addFenceTiming(new FenceTiming(title + ", " + text + "(B)", bstatus, bEntryDate));
+
+            bEntryDate = format.format(currentEntryDate.getTime() + 1000);
+            bstatus = "Exited: " + title + ", " + text;
+            databaseHandler.addFenceTiming(new FenceTiming(title + ", " + text + "(B)", bstatus, bEntryDate));
+
+            if (mSharedPreferences.getBoolean("SWITCH", false)) {
+                InsertFutionTable asyncFT = new InsertFutionTable(geofenceAddress, geoFenceState, bEntryDate, gemail);
+                // google office(B), 2nd floor, entered/exited, time, mail
+                asyncFT.execute();
+            }
         }
 
-        if (mSharedPreferences.getBoolean("SWITCH", false)) {
-            InsertFutionTable asyncFT = new InsertFutionTable(geofenceAddress, geoFenceState, bEntryDate, gemail);
-            // google office(B), 2nd floor, entered/exited, time, mail
-            asyncFT.execute();
-        }
 
         try {
             bstac.stopRangingBeacons();
