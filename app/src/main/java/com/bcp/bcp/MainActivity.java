@@ -140,11 +140,36 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
         samplelocFenDetailses = prepareCardDetails();
         if (samplelocFenDetailses != null && samplelocFenDetailses.size() > 0) {
-            textadd.setText(samplelocFenDetailses.get(0).getAddress().replace(",", "\n"));
-            texttime.setText(samplelocFenDetailses.get(0).getTime());
+            if(samplelocFenDetailses.get(0).getStatus().contains("Entered")){
+                textadd.setText(samplelocFenDetailses.get(0).getAddress().replace(",", "\n"));
+                texttime.setText(samplelocFenDetailses.get(0).getTime());
+
+                texttime.setTextColor(getResources().getColor(R.color.colorYellow));
+                textadd.setTextColor(getResources().getColor(R.color.colorYellow));
+
+            } else {
+                textadd.setTextColor(getResources().getColor(R.color.colorBlue));
+                textadd.setText(samplelocFenDetailses.get(0).getAddress().replace(",", "\n"));
+
+                texttime.setText(samplelocFenDetailses.get(0).getTime());
+                texttime.setTextColor(getResources().getColor(R.color.colorBlue));
+            }
             if (samplelocFenDetailses.size() > 1) {
-                textadd2.setText(samplelocFenDetailses.get(1).getAddress().replace(",", "\n"));
-                texttime2.setText(samplelocFenDetailses.get(1).getTime());
+
+                if(samplelocFenDetailses.get(1).getStatus().contains("Entered")){
+                    textadd2.setText(samplelocFenDetailses.get(1).getAddress().replace(",", "\n"));
+                    texttime2.setText(samplelocFenDetailses.get(1).getTime());
+
+                    texttime2.setTextColor(getResources().getColor(R.color.colorYellow));
+                    textadd2.setTextColor(getResources().getColor(R.color.colorYellow));
+
+                } else {
+                    textadd2.setTextColor(getResources().getColor(R.color.colorBlue));
+                    textadd2.setText(samplelocFenDetailses.get(1).getAddress().replace(",", "\n"));
+
+                    texttime2.setText(samplelocFenDetailses.get(1).getTime());
+                    texttime2.setTextColor(getResources().getColor(R.color.colorBlue));
+                }
             }
 
             cardView.setOnClickListener(new View.OnClickListener() {

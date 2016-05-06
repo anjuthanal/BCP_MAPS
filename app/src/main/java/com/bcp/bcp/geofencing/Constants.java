@@ -34,8 +34,7 @@ public final class Constants {
      */
     public static final long GEOFENCE_EXPIRATION_IN_HOURS = 12;
     public static final String TIME_FORMAT = "dd-M-yyyy HH:mm:ss";
-    public static final long TIMESTAMP_DIFF = 3 * 60 * 60 * 1000;
-    //3 * 60 * 60 * 1000; //3hrs in milliseconds
+    public static final long TIMESTAMP_DIFF =  3 * 60 * 60 * 1000; //3hrs in milliseconds
     public final static String youtubeURLPattern = "(?:youtube(?:-nocookie)?\\.com\\/(?:[^\\/\\n\\s]+\\/\\S+\\/|(?:v|e(?:mbed)?)\\/|\\S*?[?&]v=)|youtu\\.be\\/)([a-zA-Z0-9_-]{11})";
 
     /**
