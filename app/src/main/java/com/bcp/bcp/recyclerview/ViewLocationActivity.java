@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -40,10 +41,11 @@ public class ViewLocationActivity extends AppCompatActivity {
     List<LocationData> locationDataList = new ArrayList<LocationData>();
     List<LocationFenceTrackDetails> samplelocFenDetailses = new ArrayList<LocationFenceTrackDetails>();
     List<LocationFenceTrackDetails> diplayList = new ArrayList<LocationFenceTrackDetails>();
+    ArrayList<LocationFenceTrackDetails> diplayListToView = new ArrayList<LocationFenceTrackDetails>();
     private LocationDetailsAdapter locationDetailsAdapter;
     DatabaseHandler databaseHandler;
     private SimpleDateFormat format;
-    ImageView backarrow,infobtton;
+    ImageView backarrow, infobtton;
     static final long DAY = 24 * 60 * 60 * 1000;
 
     @Override
@@ -55,10 +57,10 @@ public class ViewLocationActivity extends AppCompatActivity {
         samplelocFenDetailses = new ArrayList<>();
 
         recyclerView = (RecyclerView) findViewById(R.id.loc_recycler_view);
-        backarrow = (ImageView)findViewById(R.id.backarrow);
-        infobtton = (ImageView)findViewById(R.id.info);
+        backarrow = (ImageView) findViewById(R.id.backarrow);
+        infobtton = (ImageView) findViewById(R.id.info);
 
-        locationDetailsAdapter = new LocationDetailsAdapter(diplayList);//pass new list combination of location and fence
+        locationDetailsAdapter = new LocationDetailsAdapter(diplayListToView);//pass new list combination of location and fence
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -149,44 +151,76 @@ public class ViewLocationActivity extends AppCompatActivity {
                 samplelocFenDetailses.add(trackDetails);
             }
             Collections.sort(samplelocFenDetailses, new CallsComp());
-            getDataToDisplay(samplelocFenDetailses);
+            prepareListViewForCustomizedView(samplelocFenDetailses);
         }
 
-        locationDetailsAdapter.notifyDataSetChanged();
+
     }
 
 
+    /*public List<LocationFenceTrackDetails> getDataToDisplay(List<LocationFenceTrackDetails> samplelocFenDetailses) {
 
-    public List<LocationFenceTrackDetails> getDataToDisplay(List<LocationFenceTrackDetails> samplelocFenDetailses){
 
-
-        for(LocationFenceTrackDetails fenceTrackDetails :samplelocFenDetailses)
-        {
+        for (LocationFenceTrackDetails fenceTrackDetails : samplelocFenDetailses) {
             try {
                 Date dateFromDb = format.parse(fenceTrackDetails.getTime());
                 long dbmilli = dateFromDb.getTime();
                 long cyurrDatemilli = new Date().getTime();
-                if(dbmilli > cyurrDatemilli -DAY){
+                if (dbmilli > cyurrDatemilli - DAY) {
 
                     diplayList.add(fenceTrackDetails);
-                }else{
+                } else {
 
                 }
 
-            }catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         Collections.reverse(diplayList);
-        return  diplayList;
-    }
-    private void prepareListView() {
-
-        databaseHandler = new DatabaseHandler(this);
-        fenceTimingList.addAll(databaseHandler.getAllFenceTiming());
-        locationDataList.addAll(databaseHandler.getAllLocationData());
+        listTodiplay = prepareListViewForCustomizedView(diplayList);
+        return listTodiplay;
+    }*/
 
 
+    private List<LocationFenceTrackDetails> prepareListViewForCustomizedView(List<LocationFenceTrackDetails> trackDetails) {
+
+        Collections.reverse(trackDetails);
+        for (int i = 0; i < trackDetails.size(); i++) {
+            if (i == 0) {
+                diplayListToView.add(trackDetails.get(i));
+                Log.e("adding to view"," :"+trackDetails.get(i));
+            } else {
+                LocationFenceTrackDetails previousDetail = trackDetails.get(i - 1);
+                LocationFenceTrackDetails presentDetail = trackDetails.get(i);
+                if (presentDetail.getAddress().equalsIgnoreCase(previousDetail.getAddress())) {
+//                    Log.e("presentDetail"," and "+"previousDetail same"+i);
+                    if (presentDetail.getStatus().equalsIgnoreCase(previousDetail.getStatus())) {
+//                        Log.e("presentDetail status"," and "+"previousDetail status same"+i);
+                        try {
+                            SimpleDateFormat format = new SimpleDateFormat(Constants.TIME_FORMAT);
+                            Date previousEntryDate = format.parse(TextUtils.isEmpty(previousDetail.getTime()) ? "" : previousDetail.getTime());
+                            Date currentEntryDate = format.parse(TextUtils.isEmpty(presentDetail.getTime()) ? "" : presentDetail.getTime());
+                            long timeStampDifference = currentEntryDate.getTime() - previousEntryDate.getTime();
+                            if (timeStampDifference >= Constants.TIMESTAMP_DIFF) {
+//                                Log.e("timeStampDifference >= Constants.TIMESTAMP_DIFF"," : "+"satisfied"+i);
+                                diplayListToView.add(presentDetail);
+                            }
+                        } catch (Exception e) {
+                            diplayListToView.add(presentDetail);
+                        }
+                    } else {
+//                        Log.e("presentDetail/previousDetail status"," not same "+presentDetail+i);
+                        diplayListToView.add(presentDetail);
+                    }
+                } else {
+//                    Log.e("presentDetail/previousDetail "," not same "+presentDetail+i);
+                    diplayListToView.add(presentDetail);
+                }
+            }
+        }
         locationDetailsAdapter.notifyDataSetChanged();
+        Log.e("jjjjj", "prepareListViewForCustomizedView: " + diplayListToView.size() );
+        return diplayListToView;
     }
 }
