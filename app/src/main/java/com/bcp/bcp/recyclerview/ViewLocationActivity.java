@@ -184,12 +184,9 @@ public class ViewLocationActivity extends AppCompatActivity {
 
 
     private List<LocationFenceTrackDetails> prepareListViewForCustomizedView(List<LocationFenceTrackDetails> trackDetails) {
-
-        Collections.reverse(trackDetails);
         for (int i = 0; i < trackDetails.size(); i++) {
             if (i == 0) {
                 diplayListToView.add(trackDetails.get(i));
-                Log.e("adding to view"," :"+trackDetails.get(i));
             } else {
                 LocationFenceTrackDetails previousDetail = trackDetails.get(i - 1);
                 LocationFenceTrackDetails presentDetail = trackDetails.get(i);
@@ -203,24 +200,22 @@ public class ViewLocationActivity extends AppCompatActivity {
                             Date currentEntryDate = format.parse(TextUtils.isEmpty(presentDetail.getTime()) ? "" : presentDetail.getTime());
                             long timeStampDifference = currentEntryDate.getTime() - previousEntryDate.getTime();
                             if (timeStampDifference >= Constants.TIMESTAMP_DIFF) {
-//                                Log.e("timeStampDifference >= Constants.TIMESTAMP_DIFF"," : "+"satisfied"+i);
                                 diplayListToView.add(presentDetail);
                             }
                         } catch (Exception e) {
                             diplayListToView.add(presentDetail);
                         }
                     } else {
-//                        Log.e("presentDetail/previousDetail status"," not same "+presentDetail+i);
                         diplayListToView.add(presentDetail);
                     }
                 } else {
-//                    Log.e("presentDetail/previousDetail "," not same "+presentDetail+i);
                     diplayListToView.add(presentDetail);
                 }
             }
         }
         locationDetailsAdapter.notifyDataSetChanged();
-        Log.e("jjjjj", "prepareListViewForCustomizedView: " + diplayListToView.size() );
+        Log.e("jjjjj", "prepareListViewForCustomizedView: " + diplayListToView.size());
+        Collections.reverse(diplayListToView);
         return diplayListToView;
     }
 }

@@ -25,6 +25,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.SwitchCompat;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -140,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
         samplelocFenDetailses = prepareCardDetails();
         if (samplelocFenDetailses != null && samplelocFenDetailses.size() > 0) {
-            if(samplelocFenDetailses.get(0).getStatus().contains("Entered")){
+            if (samplelocFenDetailses.get(0).getStatus().contains("Entered")) {
                 textadd.setText(samplelocFenDetailses.get(0).getAddress().replace(",", "\n"));
                 texttime.setText(samplelocFenDetailses.get(0).getTime());
 
@@ -156,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             }
             if (samplelocFenDetailses.size() > 1) {
 
-                if(samplelocFenDetailses.get(1).getStatus().contains("Entered")){
+                if (samplelocFenDetailses.get(1).getStatus().contains("Entered")) {
                     textadd2.setText(samplelocFenDetailses.get(1).getAddress().replace(",", "\n"));
                     texttime2.setText(samplelocFenDetailses.get(1).getTime());
 
@@ -662,29 +663,59 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                     dbmilli = dateFromDb.getTime();
                     cyurrDatemilli = new Date().getTime();
                     if (dbmilli > cyurrDatemilli - DAY) {
-
                         diplayList.add(fenceTrackDetails);
-                    } else {
-
                     }
-
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
             Collections.reverse(diplayList);
-            Log.e("dbmilli", ":" + ":" + dbmilli);
-            Log.e("cyurrDatemilli", ":" + cyurrDatemilli);
         }
         return diplayList;
     }
 
+    private List<LocationFenceTrackDetails> prepareListViewForCustomizedView(List<LocationFenceTrackDetails> trackDetails) {
+        List<LocationFenceTrackDetails> diplayListToView = new ArrayList<>();
+        for (int i = 0; i < trackDetails.size(); i++) {
+            if (i == 0) {
+                diplayListToView.add(trackDetails.get(i));
+            } else {
+                LocationFenceTrackDetails previousDetail = trackDetails.get(i - 1);
+                LocationFenceTrackDetails presentDetail = trackDetails.get(i);
+                if (presentDetail.getAddress().equalsIgnoreCase(previousDetail.getAddress())) {
+//                    Log.e("presentDetail"," and "+"previousDetail same"+i);
+                    if (presentDetail.getStatus().equalsIgnoreCase(previousDetail.getStatus())) {
+//                        Log.e("presentDetail status"," and "+"previousDetail status same"+i);
+                        try {
+                            SimpleDateFormat format = new SimpleDateFormat(Constants.TIME_FORMAT);
+                            Date previousEntryDate = format.parse(TextUtils.isEmpty(previousDetail.getTime()) ? "" : previousDetail.getTime());
+                            Date currentEntryDate = format.parse(TextUtils.isEmpty(presentDetail.getTime()) ? "" : presentDetail.getTime());
+                            long timeStampDifference = currentEntryDate.getTime() - previousEntryDate.getTime();
+                            if (timeStampDifference >= Constants.TIMESTAMP_DIFF) {
+                                diplayListToView.add(presentDetail);
+                            }
+                        } catch (Exception e) {
+                            diplayListToView.add(presentDetail);
+                        }
+                    } else {
+                        diplayListToView.add(presentDetail);
+                    }
+                } else {
+                    diplayListToView.add(presentDetail);
+                }
+            }
+        }
+        Log.e("jjjjj", "prepareListViewForCustomizedView: " + diplayListToView.size());
+        Collections.reverse(diplayListToView);
+        return diplayListToView;
+    }
+
 
     private List<LocationFenceTrackDetails> prepareCardDetails() {
-
         databaseHandler = new DatabaseHandler(this);
         fenceTimingList.addAll(databaseHandler.getAllFenceTiming());
         locationDataList.addAll(databaseHandler.getAllLocationData());
+        locFenDetailsesforDisplay = new ArrayList<>();
 
         if (fenceTimingList != null || locationDataList != null) {
             for (FenceTiming fenceTiming : fenceTimingList) {
@@ -707,9 +738,8 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             }
         }
         //Log.e("samplelocFenDetailses size" ,":"+samplelocFenDetailses.size());
-        locFenDetailsesforDisplay = getDataToDisplay(samplelocFenDetailses);
+        locFenDetailsesforDisplay = prepareListViewForCustomizedView(samplelocFenDetailses);
         // Log.e("locFenDetailsesforDisplay size" ,":"+locFenDetailsesforDisplay.size());
-        Collections.reverse(samplelocFenDetailses);
-        return samplelocFenDetailses;
+        return locFenDetailsesforDisplay;
     }
 }
