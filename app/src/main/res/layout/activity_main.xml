@@ -15,7 +15,7 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
-        android:src="@drawable/cogid" />
+        android:src="@drawable/loc" />
 
     <ImageView
         android:id="@+id/locatelabel"
