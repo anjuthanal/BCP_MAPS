@@ -148,12 +148,18 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 texttime.setTextColor(getResources().getColor(R.color.colorYellow));
                 textadd.setTextColor(getResources().getColor(R.color.colorYellow));
 
-            } else {
+            } else if (samplelocFenDetailses.get(0).getStatus().contains("Exited")){
                 textadd.setTextColor(getResources().getColor(R.color.colorBlue));
                 textadd.setText(samplelocFenDetailses.get(0).getAddress().replace(",", "\n"));
 
                 texttime.setText(samplelocFenDetailses.get(0).getTime());
                 texttime.setTextColor(getResources().getColor(R.color.colorBlue));
+            }else{
+                textadd.setTextColor(getResources().getColor(R.color.colorWhite));
+                textadd.setText(samplelocFenDetailses.get(0).getAddress().replace(",", "\n"));
+
+                texttime.setText(samplelocFenDetailses.get(0).getTime());
+                texttime.setTextColor(getResources().getColor(R.color.colorWhite));
             }
             if (samplelocFenDetailses.size() > 1) {
 
@@ -164,12 +170,18 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                     texttime2.setTextColor(getResources().getColor(R.color.colorYellow));
                     textadd2.setTextColor(getResources().getColor(R.color.colorYellow));
 
-                } else {
+                } else if (samplelocFenDetailses.get(1).getStatus().contains("Exited")){
                     textadd2.setTextColor(getResources().getColor(R.color.colorBlue));
                     textadd2.setText(samplelocFenDetailses.get(1).getAddress().replace(",", "\n"));
 
                     texttime2.setText(samplelocFenDetailses.get(1).getTime());
                     texttime2.setTextColor(getResources().getColor(R.color.colorBlue));
+                }else{
+                    textadd2.setTextColor(getResources().getColor(R.color.colorWhite));
+                    textadd2.setText(samplelocFenDetailses.get(1).getAddress().replace(",", "\n"));
+
+                    texttime2.setText(samplelocFenDetailses.get(1).getTime());
+                    texttime2.setTextColor(getResources().getColor(R.color.colorWhite));
                 }
             }
 

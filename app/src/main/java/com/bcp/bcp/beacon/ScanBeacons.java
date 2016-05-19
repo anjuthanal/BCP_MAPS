@@ -206,7 +206,7 @@ public class ScanBeacons extends Service implements BeaconstacReceiver.OnRuleTri
 
     private void handleBeaconData(String title, String text, ArrayList<String> url) {
         Log.e(TAG, "handleBeaconData: Servicew");
-        sendNotification(this, text, title);
+
 
         DatabaseHandler databaseHandler = new DatabaseHandler(this);
         FenceTiming previousFenceEntry = databaseHandler.getFenceTimingByAddress(title + ", " + text + "(B)");
@@ -214,24 +214,18 @@ public class ScanBeacons extends Service implements BeaconstacReceiver.OnRuleTri
         Date currentEntryDate = new Date();
         SimpleDateFormat format = new SimpleDateFormat(Constants.TIME_FORMAT);
         String bEntryDate = format.format(currentEntryDate);
+
         Date previousEntryDate = null;
         long timeStampDifference = 0;
         String geofenceAddress = title + " " + text + "(B)";
 
         if (previousFenceEntry != null) {
+
             try {
                 previousEntryDate = format.parse(TextUtils.isEmpty(previousFenceEntry.getDatetime()) ? "" : previousFenceEntry.getDatetime());
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-        }
-
-        if (previousEntryDate != null) {
-            timeStampDifference = currentEntryDate.getTime() - previousEntryDate.getTime();
-        }
-
-        if (previousFenceEntry != null && previousFenceEntry.getStatus().contains("Exited")) {
-            timeStampDifference = 0;
         }
 
         String bstatus = "";
@@ -247,26 +241,38 @@ public class ScanBeacons extends Service implements BeaconstacReceiver.OnRuleTri
             }
         }
 
-        if (timeStampDifference < Constants.TIMESTAMP_DIFF) {
-            bstatus = "Entered: " + title + ", " + text;
+        if (previousEntryDate != null) {
+            timeStampDifference = currentEntryDate.getTime() - previousEntryDate.getTime();
+        }else{
+            sendNotification(this, text, title);
+            bstatus = "--: " + title + ", " + text;
             databaseHandler.addFenceTiming(new FenceTiming(title + ", " + text + "(B)", bstatus, bEntryDate));
-            geoFenceState = "Entered " ;
+            geoFenceState = "-- " ;
+
 
             if (mSharedPreferences.getBoolean("SWITCH", false)) {
                 InsertFutionTable asyncFT = new InsertFutionTable(geofenceAddress, geoFenceState, bEntryDate, gemail);
                 // google office(B), 2nd floor, entered/exited, time, mail
                 asyncFT.execute();
             }
+
+
+        }
+
+        if (timeStampDifference < Constants.TIMESTAMP_DIFF) {
+
+
         } else {
-            geoFenceState = "Exited ";
-            bstatus = "Exited: " + title + ", " + text;
+            sendNotification(this, text, title);
+            geoFenceState = "-- ";
+            bstatus = "-- " + title + ", " + text;
             databaseHandler.updateFenceEntryStatus(previousFenceEntry.getDatetime(), bstatus);
 
-            bstatus = "Entered: " + title + ", " + text;
+            bstatus = "-- " + title + ", " + text;
             databaseHandler.addFenceTiming(new FenceTiming(title + ", " + text + "(B)", bstatus, bEntryDate));
 
             bEntryDate = format.format(currentEntryDate.getTime() + 1000);
-            bstatus = "Exited: " + title + ", " + text;
+            bstatus = "-- " + title + ", " + text;
             databaseHandler.addFenceTiming(new FenceTiming(title + ", " + text + "(B)", bstatus, bEntryDate));
 
             if (mSharedPreferences.getBoolean("SWITCH", false)) {
@@ -274,6 +280,7 @@ public class ScanBeacons extends Service implements BeaconstacReceiver.OnRuleTri
                 // google office(B), 2nd floor, entered/exited, time, mail
                 asyncFT.execute();
             }
+
         }
 
 
