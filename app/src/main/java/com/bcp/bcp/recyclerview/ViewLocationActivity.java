@@ -1,8 +1,10 @@
 package com.bcp.bcp.recyclerview;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -13,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.bcp.bcp.MainActivity;
 import com.bcp.bcp.R;
@@ -47,6 +50,9 @@ public class ViewLocationActivity extends AppCompatActivity {
     private SimpleDateFormat format;
     ImageView backarrow, infobtton;
     static final long DAY = 24 * 60 * 60 * 1000;
+    TextView timeText;
+    private SharedPreferences mSharedPreferences;
+    private SharedPreferences.Editor mEditor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +72,14 @@ public class ViewLocationActivity extends AppCompatActivity {
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(locationDetailsAdapter);
         format = new SimpleDateFormat(Constants.TIME_FORMAT);
+
+        mSharedPreferences = getSharedPreferences("Shared", Context.MODE_PRIVATE);
+        mEditor = mSharedPreferences.edit();
+
+        timeText = (TextView) findViewById(R.id.timeText);
+        //   String timeInterval = mSharedPreferences.getString("Time_Interval", "120000");//24 hrs/1 day by default
+        String timeInterval = mSharedPreferences.getString("BeaconTime", "00:00:00");//24 hrs/1 day by default
+        timeText.setText(timeInterval);
 
         prepareFenceDetailsOBject();
 
