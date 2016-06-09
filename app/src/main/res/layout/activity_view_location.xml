@@ -51,7 +51,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Beacon History"
-            android:textColor="@color/colorBlue"
+            android:textColor="@color/colorgreen"
             android:textSize="15dp"
             android:paddingTop="25dp"
             android:paddingLeft="20dp"
@@ -62,7 +62,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="00:00:00"
-            android:textColor="@color/colorBlue"
+            android:textColor="@color/colorgreen"
             android:id="@+id/timeText"
             android:paddingTop="25dp"
             android:layout_alignParentRight="true"
@@ -71,12 +71,59 @@
 
     </RelativeLayout>
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/beaconinoutlayout"
+        android:layout_below="@+id/beaconhistorylayout"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Beacon InOut Time"
+            android:textColor="@color/colorgreen"
+            android:textSize="15dp"
+            android:paddingTop="15dp"
+            android:paddingLeft="20dp"
+            android:id="@+id/inoutlabel"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00:00"
+            android:textColor="@color/colorgreen"
+            android:id="@+id/inText"
+            android:paddingTop="15dp"
+            android:paddingRight="20dp"
+            android:layout_marginLeft="47dp"
+            android:layout_marginStart="47dp"
+            android:layout_toRightOf="@+id/inoutlabel"
+            android:layout_toEndOf="@+id/inoutlabel" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00:00"
+            android:textColor="@color/colorgreen"
+            android:id="@+id/outText"
+            android:paddingTop="15dp"
+            android:paddingRight="20dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+
+
+
+    </RelativeLayout>
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/loc_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/beaconhistorylayout"
-        android:layout_marginTop="25dp"
-        android:scrollbars="vertical" />
+        android:scrollbars="vertical"
+        android:layout_below="@+id/beaconinoutlayout"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>

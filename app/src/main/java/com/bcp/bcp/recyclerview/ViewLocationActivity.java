@@ -50,7 +50,7 @@ public class ViewLocationActivity extends AppCompatActivity {
     private SimpleDateFormat format;
     ImageView backarrow, infobtton;
     static final long DAY = 24 * 60 * 60 * 1000;
-    TextView timeText;
+    TextView timeText,intext,outtext;
     private SharedPreferences mSharedPreferences;
     private SharedPreferences.Editor mEditor;
 
@@ -77,9 +77,16 @@ public class ViewLocationActivity extends AppCompatActivity {
         mEditor = mSharedPreferences.edit();
 
         timeText = (TextView) findViewById(R.id.timeText);
-        //   String timeInterval = mSharedPreferences.getString("Time_Interval", "120000");//24 hrs/1 day by default
-        String timeInterval = mSharedPreferences.getString("BeaconTime", "00:00:00");//24 hrs/1 day by default
-        timeText.setText(timeInterval);
+        String timeInterval = mSharedPreferences.getString("BeaconTime", "BeaconTime 00:00:00");//BeaconTime 02:00:00
+        timeText.setText(timeInterval.substring(10,timeInterval.length()));
+
+        intext = (TextView) findViewById(R.id.inText);
+        String bintime = mSharedPreferences.getString("InOutTime", "InOut time 00:00:00 00:00:00");//InOut time xx:xx:xx xx:xx:xx
+        intext.setText(bintime.substring(10,19));
+
+        outtext = (TextView) findViewById(R.id.outText);
+        String bouttime = mSharedPreferences.getString("InOutTime", "InOut time 00:00:00 00:00:00");//InOut time xx:xx:xx xx:xx:xx
+        outtext.setText(bouttime.subSequence(19,bouttime.length()));
 
         prepareFenceDetailsOBject();
 

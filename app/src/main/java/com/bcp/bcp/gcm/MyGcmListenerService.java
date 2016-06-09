@@ -61,6 +61,9 @@ public class MyGcmListenerService extends GcmListenerService {
         if(message.startsWith("BeaconTime")){
             editor.putString("BeaconTime", message);
             editor.commit();
+        }else if(message.startsWith("InOut time")){
+            editor.putString("InOutTime", message);
+            editor.commit();
         }else{
             editor.putString("Time_Interval", message);
             editor.commit();
